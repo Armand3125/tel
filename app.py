@@ -12,10 +12,10 @@ pal = {
     "Or": (228, 189, 104), "Cyan": (0, 134, 214),
     "Lila": (174, 150, 212), "Vert": (63, 142, 67),
     "Rouge": (222, 67, 67), "Bleu": (0, 120, 191),
-    "Orange": (249, 153, 99), "Vert Foncé": (59, 102, 94),
-    "Bleu Clair": (163, 216, 225), "Magenta": (236, 0, 140),
+    "Orange": (249, 153, 99), "Vert foncé": (59, 102, 94),
+    "Bleu clair": (163, 216, 225), "Magenta": (236, 0, 140),
     "Argent": (166, 169, 170), "Violet": (94, 67, 183),
-    "Bleu Foncé": (4, 47, 86),
+    "Bleu foncé": (4, 47, 86),
 }
 
 # Configuration du style CSS simplifié
