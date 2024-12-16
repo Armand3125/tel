@@ -85,10 +85,10 @@ if uploaded_image is not None:
         selected_colors = []
         selected_color_names = []
         
-        # Affichage simplifié des couleurs
+        # Affichage simplifié des couleurs avec radio boutons
         st.markdown("Sélectionnez les couleurs :")
         for i, cluster_index in enumerate(sorted_indices):
-            color_name = st.selectbox(f"Couleur dominante {i+1}", sorted_ordered_colors_by_cluster[i], key=f"color_select_{i}", index=0)
+            color_name = st.radio(f"Couleur dominante {i+1}", sorted_ordered_colors_by_cluster[i], key=f"color_select_{i}")
             selected_colors.append(pal[color_name])
             selected_color_names.append(color_name)
 
