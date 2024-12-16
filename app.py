@@ -21,7 +21,17 @@ pal = {
 # Configuration du style CSS simplifié
 css = """
     <style>
-        .color-box { border: 2px solid black; margin: 5px; width: 50px; height: 50px; display: inline-block; border-radius: 10px; }
+        .color-box { 
+            border: 2px solid black; 
+            margin: 5px; 
+            width: 50px; 
+            height: 50px; 
+            display: inline-block; 
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .color-container { text-align: center; }
+        .row { display: flex; justify-content: center; }
     </style>
 """
 st.markdown(css, unsafe_allow_html=True)
@@ -84,13 +94,22 @@ if uploaded_image is not None:
 
         selected_colors = []
         selected_color_names = []
-        
-        # Affichage simplifié des couleurs avec radio boutons
+
+        # Affichage simplifié des couleurs sous forme de cases cliquables
         st.markdown("Sélectionnez les couleurs :")
         for i, cluster_index in enumerate(sorted_indices):
-            color_name = st.radio(f"Couleur dominante {i+1}", sorted_ordered_colors_by_cluster[i], key=f"color_select_{i}")
-            selected_colors.append(pal[color_name])
-            selected_color_names.append(color_name)
+            st.markdown(f"**Couleur dominante {i+1}**")
+            col1, col2, col3 = st.columns(3)
+            selected_color = None
+            for idx, color_name in enumerate(sorted_ordered_colors_by_cluster[i]):
+                color_rgb = pal[color_name]
+                color_display = f"rgb{color_rgb}"
+                with (col1 if idx == 0 else col2 if idx == 1 else col3):
+                    if st.button(color_name, key=f"color_{i}_{idx}"):
+                        selected_color = color_name
+            if selected_color:
+                selected_colors.append(pal[selected_color])
+                selected_color_names.append(selected_color)
 
         # Recréer l'image avec les nouvelles couleurs
         new_img_arr = np.zeros_like(img_arr)
