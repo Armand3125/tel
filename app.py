@@ -32,8 +32,16 @@ st.title("Tylice - Sélection des Couleurs")
 # Chargement de l'image
 uploaded_image = st.file_uploader("Téléchargez une image", type=["jpg", "jpeg", "png"])
 
-# Sélection du nombre de couleurs
-num_selections = st.radio("Choisissez le nombre de couleurs:", [4, 6])
+# Sélection du nombre de couleurs avec les boutons
+if "num_selections" not in st.session_state:
+    st.session_state.num_selections = 4
+
+if st.button("4 Couleurs : 7.95 €"):
+    st.session_state.num_selections = 4
+if st.button("6 Couleurs : 11.95 €"):
+    st.session_state.num_selections = 6
+
+num_selections = st.session_state.num_selections
 
 # Fonction pour convertir l'image en Base64
 def encode_image_base64(image):
@@ -105,7 +113,7 @@ if uploaded_image is not None:
         img_base64 = encode_image_base64(new_image)
 
         # Afficher les dimensions
-        st.markdown(f"Dimensions de l'image : {new_width/25} cm x {new_height/25} cm")
+        st.markdown(f"Dimensions de l'image : {new_width} x {new_height}")
 
         # Bouton de téléchargement
         st.download_button(
@@ -117,3 +125,14 @@ if uploaded_image is not None:
 
     else:
         st.error("L'image doit être en RGB (3 canaux) pour continuer.")
+
+# Informations supplémentaires sur l'utilisation
+st.markdown("""
+    ### 📝 Conseils d'utilisation :
+    - Les couleurs les plus compatibles avec l'image apparaissent en premier.
+    - Préférez des images avec un bon contraste et des éléments bien définis.
+    - Une **image carrée** donnera un meilleur résultat.
+    - Il est recommandé d'inclure au moins une **zone de noir ou de blanc** pour assurer un bon contraste.
+    - Utiliser des **familles de couleurs** (ex: blanc, jaune, orange, rouge) peut produire des résultats visuellement intéressants.
+    - **Expérimentez** avec différentes combinaisons pour trouver l'esthétique qui correspond le mieux à votre projet !
+""", unsafe_allow_html=True)
