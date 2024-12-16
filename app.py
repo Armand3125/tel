@@ -21,7 +21,44 @@ pal = {
 # Configuration du style CSS simplifié
 css = """
     <style>
-        .color-box { border: 2px solid black; margin: 5px; width: 50px; height: 50px; display: inline-block; border-radius: 10px; }
+        /* Centrer le titre, le texte et les boutons */
+        .streamlit-expanderHeader, .stTitle, .stMarkdown, .stButton, .stTextInput, .stSelectbox, .stFileUploader, .stDownloadButton {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            width: 100%;
+        }
+
+        /* Centrer les éléments dans la page */
+        .stButton, .stSelectbox, .stFileUploader, .stDownloadButton {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Centrer les images */
+        .stImage {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Centrer le contenu des sections */
+        .stMarkdown {
+            text-align: center;
+        }
+
+        /* Centrer les boîtes de couleur */
+        .color-box {
+            border: 2px solid black; 
+            margin: 5px; 
+            width: 50px; 
+            height: 50px; 
+            display: inline-block; 
+            border-radius: 10px;
+            text-align: center;
+        }
     </style>
 """
 st.markdown(css, unsafe_allow_html=True)
