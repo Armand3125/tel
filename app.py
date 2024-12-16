@@ -21,16 +21,15 @@ pal = {
 # Configuration du style CSS simplifié
 css = """
     <style>
-        /* Centrer tous les éléments sauf les sections spécifiées */
-        .streamlit-expanderHeader, .stTitle, .stMarkdown, .stButton, .stTextInput, .stSelectbox, .stFileUploader, .stDownloadButton {
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        /* Centrer tout le contenu globalement */
+        .stApp {
             text-align: center;
-            width: 100%;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        /* Centrer les éléments dans la page */
+        /* Centrer les éléments spécifiques comme les boutons, images, etc. */
         .stButton, .stSelectbox, .stFileUploader, .stDownloadButton {
             display: block;
             margin-left: auto;
@@ -55,13 +54,15 @@ css = """
             text-align: center;
         }
 
-        /* Empêcher le centrage dans la section de sélection des couleurs */
-        #selection-couleurs .stMarkdown, #selection-couleurs .stSelectbox, #selection-couleurs .stButton {
+        /* Exclure le centrage pour la section de sélection des couleurs */
+        #selection-couleurs .stSelectbox, #selection-couleurs .stMarkdown, #selection-couleurs .stButton {
             display: block;
             text-align: left;
+            margin-left: 0;
+            margin-right: 0;
         }
 
-        /* Empêcher le centrage dans la section des conseils */
+        /* Exclure le centrage pour la section des conseils */
         #conseils .stMarkdown {
             text-align: left;
         }
