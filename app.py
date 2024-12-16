@@ -18,34 +18,22 @@ pal = {
     "BF": (4, 47, 86),
 }
 
-# Configuration du style CSS
+# Configuration du style CSS simplifié
 css = """
     <style>
-        .color-box { border: 3px solid black; }
-        .first-box { margin-top: 15px; }
-        .button-container { text-align: center; margin-bottom: 20px; }
-        .color-container { text-align: center; margin-top: 5px; }
-        .percentage-container { text-align: center; }
+        .color-box { border: 2px solid black; margin: 5px; width: 50px; height: 50px; display: inline-block; border-radius: 10px; }
     </style>
 """
 st.markdown(css, unsafe_allow_html=True)
 
 # Titre de l'application
-st.title("Tylice")
+st.title("Tylice - Sélection des Couleurs")
 
 # Chargement de l'image
-uploaded_image = st.file_uploader("Télécharger une image", type=["jpg", "jpeg", "png"])
+uploaded_image = st.file_uploader("Téléchargez une image", type=["jpg", "jpeg", "png"])
 
 # Sélection du nombre de couleurs
-if "num_selections" not in st.session_state:
-    st.session_state.num_selections = 4
-
-if st.button("4 Couleurs : 7.95 €"):
-    st.session_state.num_selections = 4
-if st.button("6 Couleurs : 11.95 €"):
-    st.session_state.num_selections = 6
-
-num_selections = st.session_state.num_selections
+num_selections = st.radio("Choisissez le nombre de couleurs:", [4, 6])
 
 # Fonction pour convertir l'image en Base64
 def encode_image_base64(image):
@@ -62,11 +50,6 @@ if uploaded_image is not None:
 
     resized_image = image.resize((new_width, new_height))
     img_arr = np.array(resized_image)
-
-    # Conversion de pixels à centimètres
-    px_per_cm = 25
-    new_width_cm = round(new_width / px_per_cm, 1)  # Arrondi à 1 décimale (en cm)
-    new_height_cm = round(new_height / px_per_cm, 1)  # Arrondi à 1 décimale (en cm)
 
     if img_arr.shape[-1] == 3:
         pixels = img_arr.reshape(-1, 3)
@@ -93,20 +76,13 @@ if uploaded_image is not None:
 
         selected_colors = []
         selected_color_names = []
+        
+        # Affichage simplifié des couleurs
+        st.markdown("Sélectionnez les couleurs :")
         for i, cluster_index in enumerate(sorted_indices):
-            st.markdown(f"<div class='color-container'>", unsafe_allow_html=True)
-            for j, color_name in enumerate(sorted_ordered_colors_by_cluster[i]):
-                color_rgb = pal[color_name]
-                margin_class = "first-box" if j == 0 else ""
-                st.markdown(
-                    f"<div class='color-box {margin_class}' style='background-color: rgb{color_rgb}; width: 80px; height: 20px; border-radius: 5px; margin-bottom: 4px;'></div>",
-                    unsafe_allow_html=True
-                )
-            st.markdown(f"</div>", unsafe_allow_html=True)
-
-            selected_color_name = st.radio("", sorted_ordered_colors_by_cluster[i], key=f"radio_{i}")
-            selected_colors.append(pal[selected_color_name])
-            selected_color_names.append(selected_color_name)
+            color_name = st.selectbox(f"Couleur dominante {i+1}", sorted_ordered_colors_by_cluster[i], key=f"color_select_{i}")
+            selected_colors.append(pal[color_name])
+            selected_color_names.append(color_name)
 
         # Recréer l'image avec les nouvelles couleurs
         new_img_arr = np.zeros_like(img_arr)
@@ -123,13 +99,15 @@ if uploaded_image is not None:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         file_name = f"{''.join(selected_color_names)}_{timestamp}.png"
 
-        st.image(resized_image, caption="Aperçu de l'image", use_column_width=True)
+        st.image(resized_image, caption="Aperçu de l'image", use_container_width=True)
 
         # Convertir l'image générée en Base64
         img_base64 = encode_image_base64(new_image)
 
-        st.markdown(f"**{new_width_cm} cm x {new_height_cm} cm**")
+        # Afficher les dimensions
+        st.markdown(f"Dimensions de l'image : {new_width/25} cm x {new_height/25} cm")
 
+        # Bouton de téléchargement
         st.download_button(
             label="Télécharger l'image",
             data=img_base64,
@@ -137,32 +115,5 @@ if uploaded_image is not None:
             mime="image/png"
         )
 
-        # Script pour envoyer l'image à Wix via postMessage
-        st.write(
-            f"""
-            <script>
-            const data = {{
-                name: "Image personnalisée",
-                price: 19.99,
-                fileData: "{img_base64}",
-                fileName: "{file_name}"
-            }};
-            window.parent.postMessage(data, "https://www.tylice.com/");
-            </script>
-            """,
-            unsafe_allow_html=True
-        )
-
     else:
         st.error("L'image doit être en RGB (3 canaux) pour continuer.")
-
-# Informations supplémentaires sur l'utilisation
-st.markdown("""
-    ### 📝 Conseils d'utilisation :
-    - Les couleurs les plus compatibles avec l'image apparaissent en premier.
-    - Préférez des images avec un bon contraste et des éléments bien définis.
-    - Une **image carrée** donnera un meilleur résultat.
-    - Il est recommandé d'inclure au moins une **zone de noir ou de blanc** pour assurer un bon contraste.
-    - Utiliser des **familles de couleurs** (ex: blanc, jaune, orange, rouge) peut produire des résultats visuellement intéressants.
-    - **Expérimentez** avec différentes combinaisons pour trouver l'esthétique qui correspond le mieux à votre projet !
-""", unsafe_allow_html=True)
