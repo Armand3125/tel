@@ -21,7 +21,7 @@ pal = {
 # Configuration du style CSS simplifié
 css = """
     <style>
-        /* Centrer le titre, le texte et les boutons */
+        /* Centrer tous les éléments sauf les sections spécifiées */
         .streamlit-expanderHeader, .stTitle, .stMarkdown, .stButton, .stTextInput, .stSelectbox, .stFileUploader, .stDownloadButton {
             display: flex;
             justify-content: center;
@@ -44,12 +44,7 @@ css = """
             margin-right: auto;
         }
 
-        /* Centrer le contenu des sections */
-        .stMarkdown {
-            text-align: center;
-        }
-
-        /* Centrer les boîtes de couleur */
+        /* Centrer les couleurs dans les boîtes */
         .color-box {
             border: 2px solid black; 
             margin: 5px; 
@@ -58,6 +53,17 @@ css = """
             display: inline-block; 
             border-radius: 10px;
             text-align: center;
+        }
+
+        /* Empêcher le centrage dans la section de sélection des couleurs */
+        #selection-couleurs .stMarkdown, #selection-couleurs .stSelectbox, #selection-couleurs .stButton {
+            display: block;
+            text-align: left;
+        }
+
+        /* Empêcher le centrage dans la section des conseils */
+        #conseils .stMarkdown {
+            text-align: left;
         }
     </style>
 """
@@ -121,13 +127,15 @@ if uploaded_image is not None:
 
         selected_colors = []
         selected_color_names = []
-        
-        # Affichage simplifié des couleurs
+
+        # Section de sélection des couleurs (avec un ID unique)
+        st.markdown('<div id="selection-couleurs">', unsafe_allow_html=True)
         st.markdown("Sélectionnez les couleurs :")
         for i, cluster_index in enumerate(sorted_indices):
             color_name = st.selectbox(f"Couleur dominante {i+1}", sorted_ordered_colors_by_cluster[i], key=f"color_select_{i}", index=0)
             selected_colors.append(pal[color_name])
             selected_color_names.append(color_name)
+        st.markdown('</div>', unsafe_allow_html=True)
 
         # Recréer l'image avec les nouvelles couleurs
         new_img_arr = np.zeros_like(img_arr)
@@ -163,7 +171,8 @@ if uploaded_image is not None:
     else:
         st.error("L'image doit être en RGB (3 canaux) pour continuer.")
 
-# Informations supplémentaires sur l'utilisation
+# Section des conseils (avec un ID unique)
+st.markdown('<div id="conseils">', unsafe_allow_html=True)
 st.markdown("""
     ### 📝 Conseils d'utilisation :
     - Les couleurs les plus compatibles avec l'image apparaissent en premier.
@@ -173,3 +182,4 @@ st.markdown("""
     - Utiliser des **familles de couleurs** (ex: blanc, jaune, orange, rouge) peut produire des résultats visuellement intéressants.
     - **Expérimentez** avec différentes combinaisons pour trouver l'esthétique qui correspond le mieux à votre projet !
 """, unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
