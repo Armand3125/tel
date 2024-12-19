@@ -18,74 +18,45 @@ pal = {
     "Bleu foncé": (4, 47, 86),
 }
 
-# Nouveau CSS modifié pour améliorer l'expérience mobile
+# CSS simplifié
 css = """
     <style>
-        /* Centrer tout le contenu globalement */
         .stApp {
             text-align: center;
+        }
+
+        /* Centrer les boutons et images */
+        .stButton, .stFileUploader, .stDownloadButton {
             display: block;
             margin-left: auto;
             margin-right: auto;
+            width: 100%;  
+            max-width: 300px; 
         }
 
-        /* Centrer les éléments spécifiques comme les boutons, images, etc. */
-        .stButton, .stSelectbox, .stFileUploader, .stDownloadButton {
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-            width: 100%;  /* Permet aux boutons de prendre toute la largeur */
-            max-width: 300px; /* Limite la largeur pour éviter qu'ils soient trop larges */
-        }
-
-        /* Centrer les images */
         .stImage {
             display: block;
             margin-left: auto;
             margin-right: auto;
-            max-width: 100%; /* Permet à l'image de s'ajuster à la largeur de l'écran */
+            max-width: 100%;
         }
 
-        /* Centrer les couleurs dans les boîtes */
-        .color-box {
-            border: 2px solid black; 
-            margin: 5px; 
-            width: 50px; 
-            height: 50px; 
-            display: inline-block; 
+        /* Boutons de sélection de couleur */
+        .color-button {
+            display: inline-block;
+            width: 100px;
+            height: 100px;
+            margin: 10px;
             border-radius: 10px;
-            text-align: center;
+            cursor: pointer;
         }
 
-        /* Réduire l'espace entre les éléments de sélection pour les mobiles */
-        .stSelectbox select {
-            font-size: 14px;  /* Réduit la taille de police pour plus de visibilité */
-            padding: 8px;     /* Réduit l'espace entre les éléments */
-            width: 100%;      /* S'adapte à la largeur de l'écran */
-        }
-
-        /* Exclure le centrage pour la section de sélection des couleurs */
-        #selection-couleurs .stSelectbox, #selection-couleurs .stMarkdown, #selection-couleurs .stButton {
-            display: block;
-            text-align: left;
-            margin-left: 0;
-            margin-right: 0;
-        }
-
-        /* Section des conseils : plus lisible sur mobile */
-        #conseils .stMarkdown {
-            text-align: left;
-            font-size: 14px;  /* Réduit la taille de la police pour une meilleure lisibilité */
-        }
-
-        /* Ajouter un peu d'espacement pour les éléments de la section conseils */
-        #conseils {
-            margin: 15px 0;
+        .color-button:hover {
+            opacity: 0.8;
         }
     </style>
 """
 st.markdown(css, unsafe_allow_html=True)
-
 
 # Titre de l'application
 st.title("Tylice - Sélection des Couleurs")
@@ -93,7 +64,7 @@ st.title("Tylice - Sélection des Couleurs")
 # Chargement de l'image
 uploaded_image = st.file_uploader("Téléchargez une image", type=["jpg", "jpeg", "png"])
 
-# Sélection du nombre de couleurs avec les boutons
+# Sélection du nombre de couleurs
 if "num_selections" not in st.session_state:
     st.session_state.num_selections = 4
 
@@ -146,13 +117,15 @@ if uploaded_image is not None:
         selected_colors = []
         selected_color_names = []
 
-        # Section de sélection des couleurs (avec un ID unique)
+        # Remplacer les selectbox par des boutons pour les couleurs
         st.markdown('<div id="selection-couleurs">', unsafe_allow_html=True)
         st.markdown("Sélectionnez les couleurs :")
         for i, cluster_index in enumerate(sorted_indices):
-            color_name = st.selectbox(f"Couleur dominante {i+1}", sorted_ordered_colors_by_cluster[i], key=f"color_select_{i}", index=0)
-            selected_colors.append(pal[color_name])
-            selected_color_names.append(color_name)
+            for color_name in sorted_ordered_colors_by_cluster[i]:
+                if st.button(color_name, key=f"color_button_{i}_{color_name}"):
+                    selected_colors.append(pal[color_name])
+                    selected_color_names.append(color_name)
+                    break  # On sélectionne seulement la première couleur de la liste
         st.markdown('</div>', unsafe_allow_html=True)
 
         # Recréer l'image avec les nouvelles couleurs
@@ -189,7 +162,7 @@ if uploaded_image is not None:
     else:
         st.error("L'image doit être en RGB (3 canaux) pour continuer.")
 
-# Section des conseils (avec un ID unique)
+# Section des conseils
 st.markdown('<div id="conseils">', unsafe_allow_html=True)
 st.markdown("""
     ### 📝 Conseils d'utilisation :
