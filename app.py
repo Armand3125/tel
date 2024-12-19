@@ -55,8 +55,9 @@ css = """
         }
 
         #selection-couleurs {
-            display: flex;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            gap: 10px;
             justify-content: center;
         }
     </style>
@@ -120,18 +121,15 @@ if uploaded_image is not None:
         selected_colors = []
         selected_color_names = []
 
-        # Section de sélection des couleurs avec des cases de couleur cliquables
+        # Section de sélection des couleurs avec une matrice de boutons
         st.markdown('<div id="selection-couleurs">', unsafe_allow_html=True)
         st.markdown("Sélectionnez les couleurs :")
 
         for i, cluster_index in enumerate(sorted_indices):
-            # Affichage des cases de couleur
             for color_name in sorted_ordered_colors_by_cluster[i]:
                 color_hex = '#{:02x}{:02x}{:02x}'.format(*pal[color_name])
-                if color_name not in selected_color_names:
-                    # Afficher les cases de couleur
-                    if st.checkbox(color_name, key=f'color_{color_name}'):
-                        selected_color_names.append(color_name)
+                if st.button(color_name, key=f'color_{color_name}', help=color_name):
+                    selected_color_names.append(color_name)
 
         st.markdown('</div>', unsafe_allow_html=True)
 
