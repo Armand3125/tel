@@ -132,10 +132,18 @@ if uploaded_image is not None:
         # Section de sélection des couleurs (avec un ID unique)
         st.markdown('<div id="selection-couleurs">', unsafe_allow_html=True)
         st.markdown("Sélectionnez les couleurs :")
+
+        # Remplacer les selectbox par des boutons radio
         for i, cluster_index in enumerate(sorted_indices):
-            color_name = st.selectbox(f"Couleur dominante {i+1}", sorted_ordered_colors_by_cluster[i], key=f"color_select_{i}", index=0)
+            color_name = st.radio(
+                f"Couleur dominante {i+1}", 
+                sorted_ordered_colors_by_cluster[i], 
+                key=f"color_select_{i}",
+                index=0
+            )
             selected_colors.append(pal[color_name])
             selected_color_names.append(color_name)
+
         st.markdown('</div>', unsafe_allow_html=True)
 
         # Recréer l'image avec les nouvelles couleurs
@@ -183,4 +191,4 @@ st.markdown("""
     - Utiliser des **familles de couleurs** (ex: blanc, jaune, orange, rouge) peut produire des résultats visuellement intéressants.
     - **Expérimentez** avec différentes combinaisons pour trouver l'esthétique qui correspond le mieux à votre projet !
 """, unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True) 
+st.markdown('</div>', unsafe_allow_html=True)
