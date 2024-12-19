@@ -21,50 +21,43 @@ pal = {
 # Configuration du style CSS simplifié
 css = """
     <style>
-        /* Centrer tout le contenu globalement */
         .stApp {
             text-align: center;
             display: block;
             margin-left: auto;
             margin-right: auto;
         }
-
-        /* Centrer les éléments spécifiques comme les boutons, images, etc. */
-        .stButton, .stSelectbox, .stFileUploader, .stDownloadButton {
+        
+        .stButton, .stFileUploader, .stDownloadButton {
             display: block;
             margin-left: auto;
             margin-right: auto;
         }
 
-        /* Centrer les images */
         .stImage {
             display: block;
             margin-left: auto;
             margin-right: auto;
         }
 
-        /* Centrer les couleurs dans les boîtes */
         .color-box {
-            border: 2px solid black; 
-            margin: 5px; 
-            width: 50px; 
-            height: 50px; 
-            display: inline-block; 
+            width: 50px;
+            height: 50px;
+            display: inline-block;
+            margin: 5px;
             border-radius: 10px;
-            text-align: center;
+            cursor: pointer;
+            border: 2px solid black;
         }
 
-        /* Exclure le centrage pour la section de sélection des couleurs */
-        #selection-couleurs .stSelectbox, #selection-couleurs .stMarkdown, #selection-couleurs .stButton {
-            display: block;
-            text-align: left;
-            margin-left: 0;
-            margin-right: 0;
+        .color-box.selected {
+            border: 3px solid #000;
         }
 
-        /* Exclure le centrage pour la section des conseils */
-        #conseils .stMarkdown {
-            text-align: left;
+        #selection-couleurs {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
         }
     </style>
 """
@@ -129,20 +122,24 @@ if uploaded_image is not None:
         selected_colors = []
         selected_color_names = []
 
-        # Section de sélection des couleurs (avec un ID unique)
+        # Section de sélection des couleurs avec des cases de couleur cliquables
         st.markdown('<div id="selection-couleurs">', unsafe_allow_html=True)
         st.markdown("Sélectionnez les couleurs :")
 
-        # Remplacer les selectbox par des boutons radio
         for i, cluster_index in enumerate(sorted_indices):
-            color_name = st.radio(
-                f"Couleur dominante {i+1}", 
-                sorted_ordered_colors_by_cluster[i], 
-                key=f"color_select_{i}",
-                index=0
-            )
-            selected_colors.append(pal[color_name])
-            selected_color_names.append(color_name)
+            # Affichage des cases de couleur
+            for color_name in sorted_ordered_colors_by_cluster[i]:
+                color_hex = '#{:02x}{:02x}{:02x}'.format(*pal[color_name])
+                selected = False  # By default, no color is selected
+                if color_name in selected_color_names:
+                    selected = True
+
+                st.markdown(
+                    f'<div class="color-box" style="background-color: {color_hex};" '
+                    f' onclick="window.parent.postMessage({{"color": "{color_name}"}});' 
+                    '"></div>',
+                    unsafe_allow_html=True
+                )
 
         st.markdown('</div>', unsafe_allow_html=True)
 
