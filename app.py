@@ -27,7 +27,7 @@ css = """
             margin-left: auto;
             margin-right: auto;
         }
-        
+
         .stButton, .stFileUploader, .stDownloadButton {
             display: block;
             margin-left: auto;
@@ -69,16 +69,14 @@ st.title("Tylice - Sélection des Couleurs")
 # Chargement de l'image
 uploaded_image = st.file_uploader("Téléchargez une image", type=["jpg", "jpeg", "png"])
 
-# Sélection du nombre de couleurs avec les boutons
-if "num_selections" not in st.session_state:
-    st.session_state.num_selections = 4
-
-if st.button("4 Couleurs : 7.95 €"):
-    st.session_state.num_selections = 4
-if st.button("6 Couleurs : 11.95 €"):
-    st.session_state.num_selections = 6
-
-num_selections = st.session_state.num_selections
+# Sélection du nombre de couleurs avec un slider
+num_selections = st.slider(
+    "Sélectionner le nombre de couleurs",
+    min_value=2,
+    max_value=6,
+    value=4,  # Valeur par défaut
+    step=1
+)
 
 # Fonction pour convertir l'image en Base64
 def encode_image_base64(image):
@@ -130,21 +128,14 @@ if uploaded_image is not None:
             # Affichage des cases de couleur
             for color_name in sorted_ordered_colors_by_cluster[i]:
                 color_hex = '#{:02x}{:02x}{:02x}'.format(*pal[color_name])
-                selected = False  # By default, no color is selected
-                if color_name in selected_color_names:
-                    selected = True
-
-                st.markdown(
-                    f'<div class="color-box" style="background-color: {color_hex};" '
-                    f' onclick="window.parent.postMessage({{"color": "{color_name}"}});' 
-                    '"></div>',
-                    unsafe_allow_html=True
-                )
+                if color_name not in selected_color_names:
+                    # Afficher les cases de couleur
+                    if st.checkbox(color_name, key=f'color_{color_name}'):
+                        selected_color_names.append(color_name)
 
         st.markdown('</div>', unsafe_allow_html=True)
 
         # Mettre à jour selected_colors en fonction des couleurs sélectionnées
-        # Ici, il faut remplir cette liste avec les couleurs que l'utilisateur choisit.
         selected_colors = [pal[color_name] for color_name in selected_color_names]
 
         # Recréer l'image avec les nouvelles couleurs
