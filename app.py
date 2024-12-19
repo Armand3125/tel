@@ -2,7 +2,6 @@ import streamlit as st
 from PIL import Image
 import numpy as np
 from sklearn.cluster import KMeans
-import io
 from datetime import datetime
 import base64
 
@@ -22,7 +21,7 @@ pal = {
 def rgb_to_hex(rgb):
     return '#%02x%02x%02x' % rgb
 
-# Configuration du style CSS pour les boîtes colorées
+# Configuration du style CSS pour une grille de couleurs
 css = """
     <style>
         .color-box {
@@ -30,11 +29,15 @@ css = """
             margin: 10px;
             width: 50px;
             height: 50px;
-            border-radius: 5px;
+            border: 2px solid black;
             cursor: pointer;
+            border-radius: 5px;
         }
         .color-box:hover {
-            border: 3px solid black;
+            border: 4px solid black;
+        }
+        .selected-color {
+            border: 4px solid gold !important;
         }
     </style>
 """
@@ -46,7 +49,7 @@ st.title("Tylice - Sélection des Couleurs")
 # Chargement de l'image
 uploaded_image = st.file_uploader("Téléchargez une image", type=["jpg", "jpeg", "png"])
 
-# Sélection du nombre de couleurs avec les boutons
+# Sélection du nombre de couleurs
 if "num_selections" not in st.session_state:
     st.session_state.num_selections = 4
 
@@ -61,55 +64,59 @@ num_selections = st.session_state.num_selections
 if "selected_colors" not in st.session_state:
     st.session_state.selected_colors = []
 
+# Gestion des clics sur les couleurs
+def add_color_to_selection(color_name):
+    if len(st.session_state.selected_colors) < num_selections:
+        st.session_state.selected_colors.append(color_name)
+
+# Afficher la palette de couleurs dans une grille
+st.markdown("### Cliquez sur les couleurs à sélectionner :")
+cols = st.columns(6)
+for i, (color_name, color_rgb) in enumerate(pal.items()):
+    with cols[i % 6]:
+        color_hex = rgb_to_hex(color_rgb)
+        btn_clicked = st.button(
+            f" ",
+            key=f"color_button_{color_name}",
+            help=color_name,
+        )
+        if btn_clicked:
+            add_color_to_selection(color_name)
+
+        # Style dynamique pour montrer les couleurs sélectionnées
+        selected_style = "selected-color" if color_name in st.session_state.selected_colors else ""
+        st.markdown(
+            f'<div class="color-box {selected_style}" style="background-color: {color_hex};"></div>',
+            unsafe_allow_html=True,
+        )
+
+# Afficher les couleurs sélectionnées
+if st.session_state.selected_colors:
+    st.markdown("### Couleurs sélectionnées :")
+    cols = st.columns(len(st.session_state.selected_colors))
+    for i, color_name in enumerate(st.session_state.selected_colors):
+        color_rgb = pal[color_name]
+        color_hex = rgb_to_hex(color_rgb)
+        with cols[i]:
+            st.markdown(
+                f'<div class="color-box" style="background-color: {color_hex};"></div>',
+                unsafe_allow_html=True,
+            )
+
 if uploaded_image is not None:
     image = Image.open(uploaded_image).convert("RGB")
     img_arr = np.array(image)
     pixels = img_arr.reshape(-1, 3)
     kmeans = KMeans(n_clusters=num_selections, random_state=0).fit(pixels)
-    centers = kmeans.cluster_centers_
-
-    centers_rgb = np.array(centers, dtype=int)
-    pal_rgb = np.array(list(pal.values()), dtype=int)
-    distances = np.linalg.norm(centers_rgb[:, None] - pal_rgb[None, :], axis=2)
-
-    # Trouver les couleurs les plus proches dans la palette
-    ordered_colors_by_cluster = []
-    for i in range(num_selections):
-        closest_colors_idx = distances[i].argsort()
-        ordered_colors_by_cluster.append([list(pal.keys())[idx] for idx in closest_colors_idx])
-
-    # Afficher les couleurs détectées sous forme de boîtes cliquables
-    st.markdown("### Cliquez pour sélectionner les couleurs :")
-    for i, cluster in enumerate(ordered_colors_by_cluster):
-        st.markdown(f"**Couleur dominante {i+1}:**")
-        cols = st.columns(len(cluster))
-        for j, color_name in enumerate(cluster):
-            with cols[j]:
-                color = pal[color_name]
-                color_hex = rgb_to_hex(color)
-                if st.button("", key=f"color_button_{i}_{j}", help=color_name):
-                    if len(st.session_state.selected_colors) < num_selections:
-                        st.session_state.selected_colors.append((color_name, color))
-
-    # Afficher les couleurs sélectionnées
-    if st.session_state.selected_colors:
-        st.markdown("### Couleurs sélectionnées :")
-        for color_name, color in st.session_state.selected_colors:
-            st.markdown(
-                f'<div class="color-box" style="background-color: {rgb_to_hex(color)};"></div>',
-                unsafe_allow_html=True,
-            )
+    labels = kmeans.labels_
 
     # Recréer l'image avec les couleurs sélectionnées
-    if len(st.session_state.selected_colors) == num_selections:
-        selected_rgb = [color[1] for color in st.session_state.selected_colors]
-        new_img_arr = np.zeros_like(img_arr)
-        labels = kmeans.labels_
-        for i in range(img_arr.shape[0]):
-            for j in range(img_arr.shape[1]):
-                lbl = labels[i * img_arr.shape[1] + j]
-                new_img_arr[i, j] = selected_rgb[lbl]
+    selected_rgb = [pal[name] for name in st.session_state.selected_colors]
+    new_img_arr = np.zeros_like(img_arr)
+    for i in range(img_arr.shape[0]):
+        for j in range(img_arr.shape[1]):
+            lbl = labels[i * img_arr.shape[1] + j]
+            new_img_arr[i, j] = selected_rgb[lbl % len(selected_rgb)]
 
-        new_image = Image.fromarray(new_img_arr.astype("uint8"))
-
-        st.image(new_image, caption="Image transformée", use_container_width=True)
+    new_image = Image.fromarray(new_img_arr.astype("uint8"))
+    st.image(new_image, caption="Image transformée", use_container_width=True)
