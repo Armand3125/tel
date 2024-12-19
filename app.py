@@ -18,41 +18,53 @@ pal = {
     "Bleu foncé": (4, 47, 86),
 }
 
-# CSS simplifié
+# Configuration du style CSS simplifié
 css = """
     <style>
+        /* Centrer tout le contenu globalement */
         .stApp {
             text-align: center;
-        }
-
-        /* Centrer les boutons et images */
-        .stButton, .stFileUploader, .stDownloadButton {
             display: block;
             margin-left: auto;
             margin-right: auto;
-            width: 100%;  
-            max-width: 300px; 
         }
 
+        /* Centrer les éléments spécifiques comme les boutons, images, etc. */
+        .stButton, .stSelectbox, .stFileUploader, .stDownloadButton {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Centrer les images */
         .stImage {
             display: block;
             margin-left: auto;
             margin-right: auto;
-            max-width: 100%;
         }
 
-        /* Boutons de sélection de couleur */
-        .color-button {
-            display: inline-block;
-            width: 100px;
-            height: 100px;
-            margin: 10px;
+        /* Centrer les couleurs dans les boîtes */
+        .color-box {
+            border: 2px solid black; 
+            margin: 5px; 
+            width: 50px; 
+            height: 50px; 
+            display: inline-block; 
             border-radius: 10px;
-            cursor: pointer;
+            text-align: center;
         }
 
-        .color-button:hover {
-            opacity: 0.8;
+        /* Exclure le centrage pour la section de sélection des couleurs */
+        #selection-couleurs .stSelectbox, #selection-couleurs .stMarkdown, #selection-couleurs .stButton {
+            display: block;
+            text-align: left;
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        /* Exclure le centrage pour la section des conseils */
+        #conseils .stMarkdown {
+            text-align: left;
         }
     </style>
 """
@@ -64,7 +76,7 @@ st.title("Tylice - Sélection des Couleurs")
 # Chargement de l'image
 uploaded_image = st.file_uploader("Téléchargez une image", type=["jpg", "jpeg", "png"])
 
-# Sélection du nombre de couleurs
+# Sélection du nombre de couleurs avec les boutons
 if "num_selections" not in st.session_state:
     st.session_state.num_selections = 4
 
@@ -117,15 +129,13 @@ if uploaded_image is not None:
         selected_colors = []
         selected_color_names = []
 
-        # Remplacer les selectbox par des boutons pour les couleurs
+        # Section de sélection des couleurs (avec un ID unique)
         st.markdown('<div id="selection-couleurs">', unsafe_allow_html=True)
         st.markdown("Sélectionnez les couleurs :")
         for i, cluster_index in enumerate(sorted_indices):
-            for color_name in sorted_ordered_colors_by_cluster[i]:
-                if st.button(color_name, key=f"color_button_{i}_{color_name}"):
-                    selected_colors.append(pal[color_name])
-                    selected_color_names.append(color_name)
-                    break  # On sélectionne seulement la première couleur de la liste
+            color_name = st.selectbox(f"Couleur dominante {i+1}", sorted_ordered_colors_by_cluster[i], key=f"color_select_{i}", index=0)
+            selected_colors.append(pal[color_name])
+            selected_color_names.append(color_name)
         st.markdown('</div>', unsafe_allow_html=True)
 
         # Recréer l'image avec les nouvelles couleurs
@@ -162,7 +172,7 @@ if uploaded_image is not None:
     else:
         st.error("L'image doit être en RGB (3 canaux) pour continuer.")
 
-# Section des conseils
+# Section des conseils (avec un ID unique)
 st.markdown('<div id="conseils">', unsafe_allow_html=True)
 st.markdown("""
     ### 📝 Conseils d'utilisation :
@@ -173,4 +183,4 @@ st.markdown("""
     - Utiliser des **familles de couleurs** (ex: blanc, jaune, orange, rouge) peut produire des résultats visuellement intéressants.
     - **Expérimentez** avec différentes combinaisons pour trouver l'esthétique qui correspond le mieux à votre projet !
 """, unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True) 
