@@ -143,6 +143,10 @@ if uploaded_image is not None:
 
         st.markdown('</div>', unsafe_allow_html=True)
 
+        # Mettre à jour selected_colors en fonction des couleurs sélectionnées
+        # Ici, il faut remplir cette liste avec les couleurs que l'utilisateur choisit.
+        selected_colors = [pal[color_name] for color_name in selected_color_names]
+
         # Recréer l'image avec les nouvelles couleurs
         new_img_arr = np.zeros_like(img_arr)
         for i in range(img_arr.shape[0]):
