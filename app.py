@@ -152,7 +152,7 @@ if uploaded_image is not None:
         for i in range(img_arr.shape[0]):
             for j in range(img_arr.shape[1]):
                 lbl = labels[i * img_arr.shape[1] + j]
-                new_color_index = np.where(sorted_indices == lbl)[0][0]
+                new_color_index = sorted_indices.tolist().index(lbl)  # Corriger l'indice
                 new_img_arr[i, j] = selected_colors[new_color_index]
 
         new_image = Image.fromarray(new_img_arr.astype('uint8'))
