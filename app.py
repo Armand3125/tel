@@ -18,7 +18,7 @@ pal = {
     "BF": (4, 47, 86),
 }
 
-# Configuration du style CSS pour la réactivité
+# Configuration du style CSS pour une meilleure réactivité
 css = """
     <style>
         .stRadio div [data-testid="stMarkdownContainer"] p { display: none; }
@@ -30,33 +30,36 @@ css = """
         .percentage-container { margin-bottom: 0; }
         .button-container { margin-bottom: 20px; }
 
-        /* Garde les colonnes côte à côte en utilisant flexbox avec des tailles réactives */
+        /* Flexbox pour afficher les colonnes côte à côte */
         .stColumns {
             display: flex;
-            flex-wrap: wrap;
             justify-content: space-between;
+            flex-wrap: wrap;
             gap: 10px;
         }
 
         .stColumn {
-            flex: 1 1 45%; /* Garde les colonnes côte à côte en utilisant 45% de largeur */
+            flex: 1 1 48%; /* Permet de garder les colonnes à côté, en utilisant 48% de la largeur */
         }
 
-        /* Pour les petits écrans, on ajuste les colonnes mais on les garde côte à côte */
-        @media screen and (max-width: 768px) {
+        /* Pour les petits écrans, garder les colonnes côte à côte et ajuster la taille */
+        @media (max-width: 768px) {
             .stColumn {
-                flex: 1 1 45%; /* Sur mobile, les colonnes prennent 45% de la largeur */
+                flex: 1 1 48%;  /* Sur les petits écrans, garder les colonnes à 48% */
                 margin-bottom: 15px;
             }
+
             .color-box {
                 width: 100% !important;
                 height: 10px !important;
                 margin-bottom: 8px;
             }
+
             .stButton {
                 width: 100% !important;
                 margin-top: 10px;
             }
+
             .stImage {
                 width: 100% !important;
                 height: auto !important;
