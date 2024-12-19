@@ -21,6 +21,7 @@ pal = {
 # Configuration du style CSS simplifié
 css = """
     <style>
+        /* Centrer tout le contenu globalement */
         .stApp {
             text-align: center;
             display: block;
@@ -28,37 +29,42 @@ css = """
             margin-right: auto;
         }
 
-        .stButton, .stFileUploader, .stDownloadButton {
+        /* Centrer les éléments spécifiques comme les boutons, images, etc. */
+        .stButton, .stSelectbox, .stFileUploader, .stDownloadButton {
             display: block;
             margin-left: auto;
             margin-right: auto;
         }
 
+        /* Centrer les images */
         .stImage {
             display: block;
             margin-left: auto;
             margin-right: auto;
         }
 
+        /* Centrer les couleurs dans les boîtes */
         .color-box {
-            width: 50px;
-            height: 50px;
-            display: inline-block;
-            margin: 5px;
+            border: 2px solid black; 
+            margin: 5px; 
+            width: 50px; 
+            height: 50px; 
+            display: inline-block; 
             border-radius: 10px;
-            cursor: pointer;
-            border: 2px solid black;
+            text-align: center;
         }
 
-        .color-box.selected {
-            border: 3px solid #000;
+        /* Exclure le centrage pour la section de sélection des couleurs */
+        #selection-couleurs .stSelectbox, #selection-couleurs .stMarkdown, #selection-couleurs .stButton {
+            display: block;
+            text-align: left;
+            margin-left: 0;
+            margin-right: 0;
         }
 
-        #selection-couleurs {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-            gap: 10px;
-            justify-content: center;
+        /* Exclure le centrage pour la section des conseils */
+        #conseils .stMarkdown {
+            text-align: left;
         }
     </style>
 """
@@ -70,14 +76,16 @@ st.title("Tylice - Sélection des Couleurs")
 # Chargement de l'image
 uploaded_image = st.file_uploader("Téléchargez une image", type=["jpg", "jpeg", "png"])
 
-# Sélection du nombre de couleurs avec un slider
-num_selections = st.slider(
-    "Sélectionner le nombre de couleurs",
-    min_value=2,
-    max_value=6,
-    value=4,  # Valeur par défaut
-    step=1
-)
+# Sélection du nombre de couleurs avec les boutons
+if "num_selections" not in st.session_state:
+    st.session_state.num_selections = 4
+
+if st.button("4 Couleurs : 7.95 €"):
+    st.session_state.num_selections = 4
+if st.button("6 Couleurs : 11.95 €"):
+    st.session_state.num_selections = 6
+
+num_selections = st.session_state.num_selections
 
 # Fonction pour convertir l'image en Base64
 def encode_image_base64(image):
@@ -121,27 +129,21 @@ if uploaded_image is not None:
         selected_colors = []
         selected_color_names = []
 
-        # Section de sélection des couleurs avec une matrice de boutons
+        # Section de sélection des couleurs (avec un ID unique)
         st.markdown('<div id="selection-couleurs">', unsafe_allow_html=True)
         st.markdown("Sélectionnez les couleurs :")
-
         for i, cluster_index in enumerate(sorted_indices):
-            for color_name in sorted_ordered_colors_by_cluster[i]:
-                color_hex = '#{:02x}{:02x}{:02x}'.format(*pal[color_name])
-                if st.button(color_name, key=f'color_{color_name}', help=color_name):
-                    selected_color_names.append(color_name)
-
+            color_name = st.selectbox(f"Couleur dominante {i+1}", sorted_ordered_colors_by_cluster[i], key=f"color_select_{i}", index=0)
+            selected_colors.append(pal[color_name])
+            selected_color_names.append(color_name)
         st.markdown('</div>', unsafe_allow_html=True)
-
-        # Mettre à jour selected_colors en fonction des couleurs sélectionnées
-        selected_colors = [pal[color_name] for color_name in selected_color_names]
 
         # Recréer l'image avec les nouvelles couleurs
         new_img_arr = np.zeros_like(img_arr)
         for i in range(img_arr.shape[0]):
             for j in range(img_arr.shape[1]):
                 lbl = labels[i * img_arr.shape[1] + j]
-                new_color_index = sorted_indices.tolist().index(lbl)  # Corriger l'indice
+                new_color_index = np.where(sorted_indices == lbl)[0][0]
                 new_img_arr[i, j] = selected_colors[new_color_index]
 
         new_image = Image.fromarray(new_img_arr.astype('uint8'))
