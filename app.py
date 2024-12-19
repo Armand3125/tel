@@ -8,133 +8,99 @@ import base64
 
 # Palette de couleurs
 pal = {
-    "Noir": (0, 0, 0), "Blanc": (255, 255, 255),
-    "Or": (255, 204, 0), "Cyan": (0, 204, 255),
-    "Lila": (204, 153, 255), "Vert": (51, 204, 51),
-    "Rouge": (255, 0, 0), "Bleu": (0, 102, 204),
-    "Orange": (255, 165, 0), "Vert foncé": (34, 139, 34),
-    "Bleu clair": (135, 206, 235), "Magenta": (255, 0, 255),
-    "Argent": (192, 192, 192), "Violet": (128, 0, 128),
-    "Bleu foncé": (0, 0, 128),
+    "NC": (0, 0, 0), "BJ": (255, 255, 255),
+    "JO": (228, 189, 104), "BC": (0, 134, 214),
+    "VL": (174, 150, 212), "VG": (63, 142, 67),
+    "RE": (222, 67, 67), "BM": (0, 120, 191),
+    "OM": (249, 153, 99), "VGa": (59, 102, 94),
+    "BG": (163, 216, 225), "VM": (236, 0, 140),
+    "GA": (166, 169, 170), "VB": (94, 67, 183),
+    "BF": (4, 47, 86),
 }
 
-# Configuration du style CSS amélioré
+# Configuration du style CSS pour une meilleure réactivité mobile
 css = """
     <style>
-        /* Styles généraux */
-        .stApp {
-            text-align: center;
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-            font-family: 'Arial', sans-serif;
-            background-color: #f0f0f0;
+        /* Pour le mobile */
+        @media only screen and (max-width: 600px) {
+            .stButton, .stRadio, .stSelectbox {
+                width: 100% !important;
+                margin-bottom: 15px;
+            }
+            .stImage {
+                width: 100% !important;
+                max-width: 100%;
+                margin-top: 10px;
+            }
+            .stTitle, .stHeader {
+                font-size: 1.5rem;
+                text-align: center;
+            }
+            .color-box {
+                width: 60px;
+                height: 60px;
+            }
+            .color-container {
+                display: flex;
+                justify-content: space-around;
+                margin-top: 5px;
+            }
+            .button-container {
+                margin-top: 20px;
+            }
         }
 
-        /* Titre */
-        h1 {
-            font-size: 3rem;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 20px;
+        /* Pour les tablettes et écrans plus larges */
+        @media only screen and (min-width: 601px) {
+            .color-container {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: space-around;
+                margin-top: 5px;
+            }
+            .color-box {
+                width: 80px;
+                height: 80px;
+            }
         }
 
-        /* Fond de la page */
-        .stMarkdown {
-            background-color: #f4f4f4;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+        .stColumn {
+            padding: 0 !important;
         }
 
-        /* Boutons de sélection des couleurs */
-        .stButton {
-            background-color: #007BFF;
-            color: white;
-            border-radius: 5px;
-            padding: 10px 20px;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.2s ease-in-out;
-        }
-        .stButton:hover {
-            background-color: #0056b3;
-            transform: translateY(-2px);
-        }
-
-        /* Sélecteurs de couleurs */
-        .stSelectbox {
-            background-color: #ffffff;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-            margin-bottom: 15px;
-            padding: 10px;
-        }
-
-        /* Alignement des éléments */
-        .stImage, .stSelectbox, .stButton, .stFileUploader {
-            margin-top: 20px;
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        /* Style des cases de couleurs */
-        .color-box {
-            border: 2px solid #ddd;
-            margin: 5px;
-            width: 50px;
-            height: 50px;
-            display: inline-block;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s ease-in-out;
-        }
-
-        .color-box:hover {
-            transform: scale(1.1);
-        }
-
-        /* Style des conseils */
-        #conseils .stMarkdown {
-            background-color: #ffffff;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 20px;
-            color: #333;
-        }
-
-        #conseils .stMarkdown h3 {
-            font-size: 1.5rem;
-            margin-bottom: 10px;
-        }
-
-        #conseils .stMarkdown p {
-            font-size: 1rem;
-            line-height: 1.6;
-            color: #555;
+        .first-box {
+            margin-top: 15px;
         }
     </style>
 """
 st.markdown(css, unsafe_allow_html=True)
 
 # Titre de l'application
-st.title("Tylice - Sélection des Couleurs")
+st.title("Tylice")
 
 # Chargement de l'image
-uploaded_image = st.file_uploader("Téléchargez une image", type=["jpg", "jpeg", "png"])
+uploaded_image = st.file_uploader("Télécharger une image", type=["jpg", "jpeg", "png"])
 
-# Sélection du nombre de couleurs avec les boutons
+# Sélection du nombre de couleurs
 if "num_selections" not in st.session_state:
     st.session_state.num_selections = 4
 
-if st.button("4 Couleurs : 7.95 €"):
-    st.session_state.num_selections = 4
-if st.button("6 Couleurs : 11.95 €"):
-    st.session_state.num_selections = 6
+col1, col2 = st.columns([2, 5])
+
+with col1:
+    if st.button("4 Couleurs : 7.95 €"):
+        st.session_state.num_selections = 4
+
+with col2:
+    if st.button("6 Couleurs : 11.95 €"):
+        st.session_state.num_selections = 6
 
 num_selections = st.session_state.num_selections
+cols_percentages = st.columns(num_selections)
+
+rectangle_width = 80 if num_selections == 4 else 50
+rectangle_height = 20
+cols = st.columns(num_selections * 2)
 
 # Fonction pour convertir l'image en Base64
 def encode_image_base64(image):
@@ -151,6 +117,11 @@ if uploaded_image is not None:
 
     resized_image = image.resize((new_width, new_height))
     img_arr = np.array(resized_image)
+
+    # Conversion de pixels à centimètres
+    px_per_cm = 25
+    new_width_cm = round(new_width / px_per_cm, 1)  # Arrondi à 1 décimale (en cm)
+    new_height_cm = round(new_height / px_per_cm, 1)  # Arrondi à 1 décimale (en cm)
 
     if img_arr.shape[-1] == 3:
         pixels = img_arr.reshape(-1, 3)
@@ -177,15 +148,22 @@ if uploaded_image is not None:
 
         selected_colors = []
         selected_color_names = []
-
-        # Section de sélection des couleurs (avec un ID unique)
-        st.markdown('<div id="selection-couleurs">', unsafe_allow_html=True)
-        st.markdown("Sélectionnez les couleurs :")
         for i, cluster_index in enumerate(sorted_indices):
-            color_name = st.selectbox(f"Couleur dominante {i+1}", sorted_ordered_colors_by_cluster[i], key=f"color_select_{i}", index=0)
-            selected_colors.append(pal[color_name])
-            selected_color_names.append(color_name)
-        st.markdown('</div>', unsafe_allow_html=True)
+            with cols[i * 2]:
+                st.markdown("<div class='color-container'>", unsafe_allow_html=True)
+                for j, color_name in enumerate(sorted_ordered_colors_by_cluster[i]):
+                    color_rgb = pal[color_name]
+                    margin_class = "first-box" if j == 0 else ""
+                    st.markdown(
+                        f"<div class='color-box {margin_class}' style='background-color: rgb{color_rgb}; width: {rectangle_width}px; height: {rectangle_height}px; border-radius: 5px; margin-bottom: 4px;'></div>",
+                        unsafe_allow_html=True
+                    )
+                st.markdown("</div>", unsafe_allow_html=True)
+
+            with cols[i * 2 + 1]:
+                selected_color_name = st.radio("", sorted_ordered_colors_by_cluster[i], key=f"radio_{i}", label_visibility="hidden")
+                selected_colors.append(pal[selected_color_name])
+                selected_color_names.append(selected_color_name)
 
         # Recréer l'image avec les nouvelles couleurs
         new_img_arr = np.zeros_like(img_arr)
@@ -202,40 +180,50 @@ if uploaded_image is not None:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         file_name = f"{''.join(selected_color_names)}_{timestamp}.png"
 
-        # Encadré pour l'image
-        st.markdown('<div style="border: 2px solid #ddd; border-radius: 8px; padding: 15px; margin-top: 20px;">', unsafe_allow_html=True)
-        st.image(resized_image, caption="Aperçu de l'image", use_container_width=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+        col1, col2, col3 = st.columns([1, 6, 1])
+        with col2:
+            st.image(resized_image, use_container_width=True)
 
         # Convertir l'image générée en Base64
         img_base64 = encode_image_base64(new_image)
 
-        # Afficher les dimensions
-        st.markdown(f"Dimensions de l'image : {new_width} x {new_height}")
+        col1, col2, col3, col4 = st.columns([4, 5, 5, 4])
+        with col2:
+            st.markdown(f"**{new_width_cm} cm x {new_height_cm} cm**")
+        with col3:
+            st.download_button(
+                label="Télécharger l'image",
+                data=img_base64,
+                file_name=file_name,
+                mime="image/png"
+            )
 
-        # Bouton de téléchargement avec un fond coloré et une bordure douce
-        st.download_button(
-            label="Télécharger l'image",
-            data=img_base64,
-            file_name=file_name,
-            mime="image/png",
-            key="download_button",
-            help="Cliquez pour télécharger votre image générée.",
-            use_container_width=True
+        # Script pour envoyer l'image à Wix via postMessage
+        st.write(
+            f"""
+            <script>
+            const data = {{
+                name: "Image personnalisée",
+                price: 19.99,  // Prix fictif, ajustez selon vos besoins
+                fileData: "{img_base64}",
+                fileName: "{file_name}"
+            }};
+            window.parent.postMessage(data, "https://www.tylice.com/");  // Remplacez par l'URL de votre site Wix
+            </script>
+            """,
+            unsafe_allow_html=True
         )
 
     else:
         st.error("L'image doit être en RGB (3 canaux) pour continuer.")
 
-# Section des conseils (avec un ID unique)
-st.markdown('<div id="conseils">', unsafe_allow_html=True)
+# Informations supplémentaires sur l'utilisation
 st.markdown("""
     ### 📝 Conseils d'utilisation :
-    - 🖼️ Les couleurs les plus compatibles avec l'image apparaissent en premier.
-    - 🌟 Préférez des images avec un bon contraste et des éléments bien définis.
-    - 🔲 Une **image carrée** donnera un meilleur résultat.
-    - ⚪ Il est recommandé d'inclure au moins une **zone de noir ou de blanc** pour assurer un bon contraste.
-    - 🎨 Utiliser des **familles de couleurs** (ex: blanc, jaune, orange, rouge) peut produire des résultats visuellement intéressants.
-    - 🌈 **Expérimentez** avec différentes combinaisons pour trouver l'esthétique qui correspond le mieux à votre projet !
+    - Les couleurs les plus compatibles avec l'image apparaissent en premier.
+    - Préférez des images avec un bon contraste et des éléments bien définis.
+    - Une **image carrée** donnera un meilleur résultat.
+    - Il est recommandé d'inclure au moins une **zone de noir ou de blanc** pour assurer un bon contraste.
+    - Utiliser des **familles de couleurs** (ex: blanc, jaune, orange, rouge) peut produire des résultats visuellement intéressants.
+    - **Expérimentez** avec différentes combinaisons pour trouver l'esthétique qui correspond le mieux à votre projet !
 """, unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
