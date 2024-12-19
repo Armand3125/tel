@@ -30,11 +30,23 @@ css = """
         .percentage-container { margin-bottom: 0; }
         .button-container { margin-bottom: 20px; }
 
-        /* Style pour rendre les colonnes responsives */
+        /* Garde les colonnes côte à côte en utilisant flexbox avec des tailles réactives */
+        .stColumns {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .stColumn {
+            flex: 1 1 45%; /* Garde les colonnes côte à côte en utilisant 45% de largeur */
+        }
+
+        /* Pour les petits écrans, on ajuste les colonnes mais on les garde côte à côte */
         @media screen and (max-width: 768px) {
             .stColumn {
-                width: 100% !important;
-                padding: 5px !important;
+                flex: 1 1 45%; /* Sur mobile, les colonnes prennent 45% de la largeur */
+                margin-bottom: 15px;
             }
             .color-box {
                 width: 100% !important;
