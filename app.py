@@ -51,7 +51,19 @@ css = """
         }
     </style>
 """
+
+# Intégrer le script JavaScript pour éviter l'affichage du clavier
+js = """
+    <script>
+        window.addEventListener('focus', function(event) {
+            document.activeElement.blur(); // Retirer le focus des éléments de saisie
+        });
+    </script>
+"""
+
+# Application de la configuration CSS et du script JavaScript
 st.markdown(css, unsafe_allow_html=True)
+st.markdown(js, unsafe_allow_html=True)
 
 # Titre de l'application
 st.title("Tylice - Sélection des Couleurs")
