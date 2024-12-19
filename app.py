@@ -18,7 +18,7 @@ pal = {
     "Bleu foncé": (4, 47, 86),
 }
 
-# Configuration du style CSS simplifié
+# Nouveau CSS modifié pour améliorer l'expérience mobile
 css = """
     <style>
         /* Centrer tout le contenu globalement */
@@ -34,6 +34,8 @@ css = """
             display: block;
             margin-left: auto;
             margin-right: auto;
+            width: 100%;  /* Permet aux boutons de prendre toute la largeur */
+            max-width: 300px; /* Limite la largeur pour éviter qu'ils soient trop larges */
         }
 
         /* Centrer les images */
@@ -41,6 +43,7 @@ css = """
             display: block;
             margin-left: auto;
             margin-right: auto;
+            max-width: 100%; /* Permet à l'image de s'ajuster à la largeur de l'écran */
         }
 
         /* Centrer les couleurs dans les boîtes */
@@ -54,6 +57,13 @@ css = """
             text-align: center;
         }
 
+        /* Réduire l'espace entre les éléments de sélection pour les mobiles */
+        .stSelectbox select {
+            font-size: 14px;  /* Réduit la taille de police pour plus de visibilité */
+            padding: 8px;     /* Réduit l'espace entre les éléments */
+            width: 100%;      /* S'adapte à la largeur de l'écran */
+        }
+
         /* Exclure le centrage pour la section de sélection des couleurs */
         #selection-couleurs .stSelectbox, #selection-couleurs .stMarkdown, #selection-couleurs .stButton {
             display: block;
@@ -62,13 +72,20 @@ css = """
             margin-right: 0;
         }
 
-        /* Exclure le centrage pour la section des conseils */
+        /* Section des conseils : plus lisible sur mobile */
         #conseils .stMarkdown {
             text-align: left;
+            font-size: 14px;  /* Réduit la taille de la police pour une meilleure lisibilité */
+        }
+
+        /* Ajouter un peu d'espacement pour les éléments de la section conseils */
+        #conseils {
+            margin: 15px 0;
         }
     </style>
 """
 st.markdown(css, unsafe_allow_html=True)
+
 
 # Titre de l'application
 st.title("Tylice - Sélection des Couleurs")
