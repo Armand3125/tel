@@ -18,7 +18,7 @@ pal = {
     "BF": (4, 47, 86),
 }
 
-# Configuration du style CSS (ajustements pour les appareils mobiles)
+# Configuration du style CSS pour la réactivité
 css = """
     <style>
         .stRadio div [data-testid="stMarkdownContainer"] p { display: none; }
@@ -29,19 +29,25 @@ css = """
         .first-box { margin-top: 15px; }
         .percentage-container { margin-bottom: 0; }
         .button-container { margin-bottom: 20px; }
+
         /* Style pour rendre les colonnes responsives */
         @media screen and (max-width: 768px) {
             .stColumn {
                 width: 100% !important;
-                padding: 0 !important;
+                padding: 5px !important;
             }
             .color-box {
-                width: 70% !important;
-                height: 15px !important;
+                width: 100% !important;
+                height: 10px !important;
                 margin-bottom: 8px;
             }
             .stButton {
                 width: 100% !important;
+                margin-top: 10px;
+            }
+            .stImage {
+                width: 100% !important;
+                height: auto !important;
             }
         }
     </style>
