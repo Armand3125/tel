@@ -21,6 +21,7 @@ pal = {
 # Configuration du style CSS simplifié
 css = """
     <style>
+        /* Centrer tout le contenu globalement */
         .stApp {
             text-align: center;
             display: block;
@@ -28,42 +29,46 @@ css = """
             margin-right: auto;
         }
 
+        /* Centrer les éléments spécifiques comme les boutons, images, etc. */
         .stButton, .stSelectbox, .stFileUploader, .stDownloadButton {
             display: block;
             margin-left: auto;
             margin-right: auto;
         }
 
+        /* Centrer les images */
         .stImage {
             display: block;
             margin-left: auto;
             margin-right: auto;
         }
 
+        /* Centrer les couleurs dans les boîtes */
         .color-box {
-            border: 2px solid black;
-            margin: 5px;
-            width: 50px;
-            height: 50px;
-            display: inline-block;
+            border: 2px solid black; 
+            margin: 5px; 
+            width: 50px; 
+            height: 50px; 
+            display: inline-block; 
             border-radius: 10px;
             text-align: center;
         }
+
+        /* Exclure le centrage pour la section de sélection des couleurs */
+        #selection-couleurs .stSelectbox, #selection-couleurs .stMarkdown, #selection-couleurs .stButton {
+            display: block;
+            text-align: left;
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        /* Exclure le centrage pour la section des conseils */
+        #conseils .stMarkdown {
+            text-align: left;
+        }
     </style>
 """
-
-# Intégrer le script JavaScript pour éviter l'affichage du clavier
-js = """
-    <script>
-        window.addEventListener('focus', function(event) {
-            document.activeElement.blur(); // Retirer le focus des éléments de saisie
-        });
-    </script>
-"""
-
-# Application de la configuration CSS et du script JavaScript
 st.markdown(css, unsafe_allow_html=True)
-st.markdown(js, unsafe_allow_html=True)
 
 # Titre de l'application
 st.title("Tylice - Sélection des Couleurs")
@@ -128,7 +133,7 @@ if uploaded_image is not None:
         st.markdown('<div id="selection-couleurs">', unsafe_allow_html=True)
         st.markdown("Sélectionnez les couleurs :")
         for i, cluster_index in enumerate(sorted_indices):
-            color_name = st.radio(f"Couleur dominante {i+1}", sorted_ordered_colors_by_cluster[i], key=f"color_select_{i}")
+            color_name = st.selectbox(f"Couleur dominante {i+1}", sorted_ordered_colors_by_cluster[i], key=f"color_select_{i}", index=0)
             selected_colors.append(pal[color_name])
             selected_color_names.append(color_name)
         st.markdown('</div>', unsafe_allow_html=True)
@@ -166,3 +171,16 @@ if uploaded_image is not None:
 
     else:
         st.error("L'image doit être en RGB (3 canaux) pour continuer.")
+
+# Section des conseils (avec un ID unique)
+st.markdown('<div id="conseils">', unsafe_allow_html=True)
+st.markdown("""
+    ### 📝 Conseils d'utilisation :
+    - Les couleurs les plus compatibles avec l'image apparaissent en premier.
+    - Préférez des images avec un bon contraste et des éléments bien définis.
+    - Une **image carrée** donnera un meilleur résultat.
+    - Il est recommandé d'inclure au moins une **zone de noir ou de blanc** pour assurer un bon contraste.
+    - Utiliser des **familles de couleurs** (ex: blanc, jaune, orange, rouge) peut produire des résultats visuellement intéressants.
+    - **Expérimentez** avec différentes combinaisons pour trouver l'esthétique qui correspond le mieux à votre projet !
+""", unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True) 
