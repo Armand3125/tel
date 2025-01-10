@@ -3,7 +3,6 @@ from PIL import Image
 import numpy as np
 from sklearn.cluster import KMeans
 import io
-from datetime import datetime
 import requests
 import urllib.parse
 
@@ -38,36 +37,59 @@ palettes_examples_6 = [
     ["NC", "BF", "VGa", "VG", "VL", "BJ"],  # Palette improvisée 2
 ]
 
-# =====================
-# Configuration du titre
-# =====================
+# ====================================
+# Configuration du titre et du style
+# ====================================
 st.title("Tylice Simplifié")
 
+css = """
+    <style>
+        .stRadio div [data-testid="stMarkdownContainer"] p { display: none; }
+        .radio-container { display: flex; flex-direction: column; align-items: center; margin: 10px; }
+        .color-container { display: flex; flex-direction: column; align-items: center; margin-top: 5px; }
+        .color-box { border: 3px solid black; }
+        .stColumn { padding: 0 !important; }
+        .first-box { margin-top: 15px; }
+        .percentage-container { margin-bottom: 0; }
+        .button-container { margin-bottom: 20px; }
+        .shopify-link { font-size: 20px; font-weight: bold; text-decoration: none; color: #2e86de; }
+        .dimension-text { font-size: 16px; font-weight: bold; color: #555; }
+    </style>
+"""
+st.markdown(css, unsafe_allow_html=True)
+
 # =========================================
-# Section 1: Exemples de Recoloration
+# Section 1: Téléchargement et Sélection
+# =========================================
+st.header("Téléchargement et Sélection")
+
+# Téléchargement de l'image
+uploaded_image = st.file_uploader("Télécharger une image", type=["jpg", "jpeg", "png"])
+
+# Sélection du nombre de couleurs
+col1, col2 = st.columns([2, 5])
+
+if uploaded_image is not None:
+    with col1:
+        if st.button("4 Couleurs : 7.95 €", key="select_4"):
+            st.session_state.num_selections = 4
+    with col2:
+        if st.button("6 Couleurs : 11.95 €", key="select_6"):
+            st.session_state.num_selections = 6
+
+# Initialisation du nombre de sélections
+if "num_selections" not in st.session_state:
+    st.session_state.num_selections = 4  # Valeur par défaut
+
+num_selections = st.session_state.num_selections
+
+# =========================================
+# Section 2: Exemples de Recoloration
 # =========================================
 st.header("Exemples de Recoloration")
 
-# Téléchargement de l'image pour les exemples
-uploaded_image_examples = st.file_uploader("Télécharger une image pour les exemples", type=["jpg", "jpeg", "png"], key="examples")
-
-# Boutons pour sélectionner le mode dans les exemples
-if uploaded_image_examples is not None:
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("4 Couleurs : 7.95 €", key="examples_4"):
-            st.session_state.examples_mode = "4"
-    with col2:
-        if st.button("6 Couleurs : 12.95 €", key="examples_6"):
-            st.session_state.examples_mode = "6"
-
-# Initialisation du mode pour les exemples
-if "examples_mode" not in st.session_state:
-    st.session_state.examples_mode = "4"
-
-# Traitement de l'image téléchargée pour les exemples
-if uploaded_image_examples is not None:
-    image = Image.open(uploaded_image_examples).convert("RGB")
+if uploaded_image is not None:
+    image = Image.open(uploaded_image).convert("RGB")
     width, height = image.size
     dim = 350  # Réduction à 350 pixels pour la plus grande dimension
     new_width = dim if width > height else int((dim / height) * width)
@@ -76,7 +98,8 @@ if uploaded_image_examples is not None:
     resized_image = image.resize((new_width, new_height))
     img_arr = np.array(resized_image)
 
-    if st.session_state.examples_mode == "4":
+    # Déterminer les palettes et le nombre de clusters
+    if num_selections == 4:
         palettes = palettes_examples_4
         num_clusters = 4
     else:
@@ -114,69 +137,31 @@ if uploaded_image_examples is not None:
         col_count += 1
 
 # =========================================
-# Section 2: Personalisations
+# Section 3: Personalisations
 # =========================================
 st.header("Personalisations")
 
-# Style personnalisé
-css = """
-    <style>
-        .stRadio div [data-testid="stMarkdownContainer"] p { display: none; }
-        .radio-container { display: flex; flex-direction: column; align-items: center; margin: 10px; }
-        .color-container { display: flex; flex-direction: column; align-items: center; margin-top: 5px; }
-        .color-box { border: 3px solid black; }
-        .stColumn { padding: 0 !important; }
-        .first-box { margin-top: 15px; }
-        .percentage-container { margin-bottom: 0; }
-        .button-container { margin-bottom: 20px; }
-        .shopify-link { font-size: 20px; font-weight: bold; text-decoration: none; color: #2e86de; }
-        .dimension-text { font-size: 16px; font-weight: bold; color: #555; }
-    </style>
-"""
-st.markdown(css, unsafe_allow_html=True)
+if uploaded_image is not None:
+    rectangle_width = 80 if num_selections == 4 else 50
+    rectangle_height = 20
+    cols_personalization = st.columns(num_selections * 2)
 
-# Téléchargement de l'image pour les personnalisations
-uploaded_image_personalization = st.file_uploader("Télécharger une image pour la personnalisation", type=["jpg", "jpeg", "png"], key="personalization")
-
-# Boutons pour sélectionner le nombre de couleurs dans les personnalisations
-if uploaded_image_personalization is not None:
-    col1, col2 = st.columns([2, 5])
-    with col1:
-        if st.button("4 Couleurs : 7.95 €", key="personalization_4"):
-            st.session_state.num_selections = 4
-    with col2:
-        if st.button("6 Couleurs : 11.95 €", key="personalization_6"):
-            st.session_state.num_selections = 6
-
-# Initialisation du nombre de sélections pour les personnalisations
-if "num_selections" not in st.session_state:
-    st.session_state.num_selections = 4
-
-num_selections = st.session_state.num_selections
-
-# Variables pour gérer la sélection et l'affichage de couleurs
-rectangle_width = 80 if num_selections == 4 else 50
-rectangle_height = 20
-cols_personalization = st.columns(num_selections * 2)
-
-# Fonction pour télécharger l'image sur Cloudinary
-def upload_to_cloudinary(image_buffer):
-    url = "https://api.cloudinary.com/v1_1/dprmsetgi/image/upload"
-    files = {"file": image_buffer}
-    data = {"upload_preset": "image_upload_tylice"}
-    try:
-        response = requests.post(url, files=files, data=data)
-        if response.status_code == 200:
-            return response.json()["secure_url"]
-        else:
+    # Fonction pour télécharger l'image sur Cloudinary
+    def upload_to_cloudinary(image_buffer):
+        url = "https://api.cloudinary.com/v1_1/dprmsetgi/image/upload"
+        files = {"file": image_buffer}
+        data = {"upload_preset": "image_upload_tylice"}
+        try:
+            response = requests.post(url, files=files, data=data)
+            if response.status_code == 200:
+                return response.json()["secure_url"]
+            else:
+                return None
+        except Exception as e:
+            st.error(f"Erreur Cloudinary : {e}")
             return None
-    except Exception as e:
-        st.error(f"Erreur Cloudinary : {e}")
-        return None
 
-# Traitement de l'image téléchargée pour les personnalisations
-if uploaded_image_personalization is not None:
-    image_pers = Image.open(uploaded_image_personalization).convert("RGB")
+    image_pers = Image.open(uploaded_image).convert("RGB")
     width_pers, height_pers = image_pers.size
     dim_pers = 350
     new_width_pers = dim_pers if width_pers > height_pers else int((dim_pers / height_pers) * width_pers)
