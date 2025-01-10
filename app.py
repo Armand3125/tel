@@ -40,13 +40,13 @@ st.title("Tylice")
 css = """
     <style>
         .stRadio div [data-testid="stMarkdownContainer"] p { display: none; }
-        .radio-container { display: flex; flex-direction: column; align-items: center; margin: 40px; }
+        .radio-container { display: flex; flex-direction: column; align-items: center; margin: 10px; }
         .color-container { display: flex; flex-direction: column; align-items: center; margin-top: 5px; }
         .color-box { border: 3px solid black; }
         .stColumn { padding: 0 !important; }
         .first-box { margin-top: 15px; }
         .percentage-container { margin-bottom: 0; }
-        .button-container { margin-bottom: 20px; }
+        .button-container { margin-bottom: 10px; }
         .shopify-link { font-size: 20px; font-weight: bold; text-decoration: none; color: #2e86de; }
         .dimension-text { font-size: 16px; font-weight: bold; color: #555; }
     </style>
