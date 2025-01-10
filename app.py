@@ -26,8 +26,8 @@ palettes = [
 palettes_6 = [
     ["NC", "VB", "RE", "OM", "JO", "BJ"],
     ["NC", "BF", "BM", "BC", "BG", "BJ"],
-    ["NC", "VGa", "BM", "GA", "JO", "BJ"],  # Palette improvisée 1
-    ["NC", "BF", "VGa", "VG", "VL", "BJ"],  # Palette improvisée 2
+    ["NC", "VGa", "BM", "GA", "JO", "BJ"],
+    ["NC", "BF", "VGa", "VG", "VL", "BJ"],
 ]
 
 st.title("Tylice Simplifié")
@@ -35,18 +35,21 @@ st.title("Tylice Simplifié")
 # Téléchargement de l'image
 uploaded_image = st.file_uploader("Télécharger une image", type=["jpg", "jpeg", "png"])
 
-# Boutons pour sélectionner le mode
+# Initialiser le mode par défaut
 if "mode" not in st.session_state:
     st.session_state.mode = "4"
 
-if uploaded_image is not None:
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("4 Couleurs : 7.95 €"):
-            st.session_state.mode = "4"
-    with col2:
-        if st.button("6 Couleurs : 12.95 €"):
-            st.session_state.mode = "6"
+# Boutons pour sélectionner le mode
+col1, col2, col3 = st.columns([1, 1, 2])
+with col1:
+    if st.button("4 Couleurs : 7.95 €"):
+        st.session_state.mode = "4"
+with col2:
+    if st.button("6 Couleurs : 12.95 €"):
+        st.session_state.mode = "6"
+with col3:
+    if st.button("Personnalisation avancée"):
+        st.session_state.mode = "advanced"
 
 # Traitement de l'image téléchargée
 if uploaded_image is not None:
@@ -60,19 +63,17 @@ if uploaded_image is not None:
     img_arr = np.array(resized_image)
 
     if st.session_state.mode == "4":
-        # Trouver 4 clusters avec KMeans
+        # Traitement pour 4 couleurs
         pixels = img_arr.reshape(-1, 3)
         kmeans = KMeans(n_clusters=4, random_state=0).fit(pixels)
         labels = kmeans.labels_
         centers = kmeans.cluster_centers_
 
-        # Calculer les niveaux de gris des clusters
         grayscale_values = np.dot(centers, [0.2989, 0.5870, 0.1140])
-        sorted_indices = np.argsort(grayscale_values)  # Trier du plus sombre au plus clair
+        sorted_indices = np.argsort(grayscale_values)
 
-        # Affichage de l'image recolorée pour chaque palette (2 par ligne)
-        col_count = 0
         cols = st.columns(2)
+        col_count = 0
 
         for palette in palettes:
             palette_colors = [pal[color] for color in palette]
@@ -91,19 +92,17 @@ if uploaded_image is not None:
             col_count += 1
 
     elif st.session_state.mode == "6":
-        # Trouver 6 clusters avec KMeans
+        # Traitement pour 6 couleurs
         pixels = img_arr.reshape(-1, 3)
         kmeans_6 = KMeans(n_clusters=6, random_state=0).fit(pixels)
         labels_6 = kmeans_6.labels_
         centers_6 = kmeans_6.cluster_centers_
 
-        # Calculer les niveaux de gris des clusters pour 6 couleurs
         grayscale_values_6 = np.dot(centers_6, [0.2989, 0.5870, 0.1140])
-        sorted_indices_6 = np.argsort(grayscale_values_6)  # Trier du plus sombre au plus clair
+        sorted_indices_6 = np.argsort(grayscale_values_6)
 
-        # Affichage de l'image recolorée pour chaque palette à 6 couleurs
-        col_count = 0
         cols = st.columns(2)
+        col_count = 0
 
         for palette in palettes_6:
             palette_colors = [pal[color] for color in palette]
@@ -120,3 +119,6 @@ if uploaded_image is not None:
             with cols[col_count % 2]:
                 st.image(recolored_image, caption=f"Palette: {' - '.join(palette)}", use_container_width=False, width=dim)
             col_count += 1
+
+    elif st.session_state.mode == "advanced":
+        st.write("Mode de personnalisation avancée à venir...")
