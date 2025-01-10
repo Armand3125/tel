@@ -32,6 +32,18 @@ palettes_6 = [
 
 st.title("Tylice Simplifié")
 
+# Boutons pour sélectionner le mode
+if "mode" not in st.session_state:
+    st.session_state.mode = "4"
+
+col1, col2 = st.columns(2)
+with col1:
+    if st.button("4 Couleurs"):
+        st.session_state.mode = "4"
+with col2:
+    if st.button("6 Couleurs"):
+        st.session_state.mode = "6"
+
 # Téléchargement de l'image
 uploaded_image = st.file_uploader("Télécharger une image", type=["jpg", "jpeg", "png"])
 
@@ -46,57 +58,64 @@ if uploaded_image is not None:
     resized_image = image.resize((new_width, new_height))
     img_arr = np.array(resized_image)
 
-    # Trouver 4 clusters avec KMeans
-    pixels = img_arr.reshape(-1, 3)
-    kmeans = KMeans(n_clusters=4, random_state=0).fit(pixels)
-    labels = kmeans.labels_
-    centers = kmeans.cluster_centers_
+    if st.session_state.mode == "4":
+        # Trouver 4 clusters avec KMeans
+        pixels = img_arr.reshape(-1, 3)
+        kmeans = KMeans(n_clusters=4, random_state=0).fit(pixels)
+        labels = kmeans.labels_
+        centers = kmeans.cluster_centers_
 
-    # Calculer les niveaux de gris des clusters
-    grayscale_values = np.dot(centers, [0.2989, 0.5870, 0.1140])
-    sorted_indices = np.argsort(grayscale_values)  # Trier du plus sombre au plus clair
+        # Calculer les niveaux de gris des clusters
+        grayscale_values = np.dot(centers, [0.2989, 0.5870, 0.1140])
+        sorted_indices = np.argsort(grayscale_values)  # Trier du plus sombre au plus clair
 
-    # Affichage de l'image recolorée pour chaque palette (2 par ligne)
-    col_count = 0
-    cols = st.columns(2)
+        # Affichage de l'image recolorée pour chaque palette (2 par ligne)
+        col_count = 0
+        cols = st.columns(2)
 
-    for palette in palettes:
-        palette_colors = [pal[color] for color in palette]
+        for palette in palettes:
+            palette_colors = [pal[color] for color in palette]
 
-        recolored_img_arr = np.zeros_like(img_arr)
-        for i in range(img_arr.shape[0]):
-            for j in range(img_arr.shape[1]):
-                lbl = labels[i * img_arr.shape[1] + j]
-                sorted_index = np.where(sorted_indices == lbl)[0][0]
-                recolored_img_arr[i, j] = palette_colors[sorted_index]
+            recolored_img_arr = np.zeros_like(img_arr)
+            for i in range(img_arr.shape[0]):
+                for j in range(img_arr.shape[1]):
+                    lbl = labels[i * img_arr.shape[1] + j]
+                    sorted_index = np.where(sorted_indices == lbl)[0][0]
+                    recolored_img_arr[i, j] = palette_colors[sorted_index]
 
-        recolored_image = Image.fromarray(recolored_img_arr.astype('uint8'))
+            recolored_image = Image.fromarray(recolored_img_arr.astype('uint8'))
 
-        with cols[col_count % 2]:
-            st.image(recolored_image, caption=f"Palette: {' - '.join(palette)}", use_container_width=False, width=dim)
-        col_count += 1
+            with cols[col_count % 2]:
+                st.image(recolored_image, caption=f"Palette: {' - '.join(palette)}", use_container_width=False, width=dim)
+            col_count += 1
 
-    # Ajouter une étape pour afficher les palettes à 6 couleurs
-    kmeans_6 = KMeans(n_clusters=6, random_state=0).fit(pixels)
-    labels_6 = kmeans_6.labels_
-    centers_6 = kmeans_6.cluster_centers_
+    elif st.session_state.mode == "6":
+        # Trouver 6 clusters avec KMeans
+        pixels = img_arr.reshape(-1, 3)
+        kmeans_6 = KMeans(n_clusters=6, random_state=0).fit(pixels)
+        labels_6 = kmeans_6.labels_
+        centers_6 = kmeans_6.cluster_centers_
 
-    # Calculer les niveaux de gris des clusters pour 6 couleurs
-    grayscale_values_6 = np.dot(centers_6, [0.2989, 0.5870, 0.1140])
-    sorted_indices_6 = np.argsort(grayscale_values_6)  # Trier du plus sombre au plus clair
+        # Calculer les niveaux de gris des clusters pour 6 couleurs
+        grayscale_values_6 = np.dot(centers_6, [0.2989, 0.5870, 0.1140])
+        sorted_indices_6 = np.argsort(grayscale_values_6)  # Trier du plus sombre au plus clair
 
-    for palette in palettes_6:
-        palette_colors = [pal[color] for color in palette]
+        # Affichage de l'image recolorée pour chaque palette à 6 couleurs
+        col_count = 0
+        cols = st.columns(2)
 
-        recolored_img_arr = np.zeros_like(img_arr)
-        for i in range(img_arr.shape[0]):
-            for j in range(img_arr.shape[1]):
-                lbl = labels_6[i * img_arr.shape[1] + j]
-                sorted_index = np.where(sorted_indices_6 == lbl)[0][0]
-                recolored_img_arr[i, j] = palette_colors[sorted_index]
+        for palette in palettes_6:
+            palette_colors = [pal[color] for color in palette]
 
-        recolored_image = Image.fromarray(recolored_img_arr.astype('uint8'))
+            recolored_img_arr = np.zeros_like(img_arr)
+            for i in range(img_arr.shape[0]):
+                for j in range(img_arr.shape[1]):
+                    lbl = labels_6[i * img_arr.shape[1] + j]
+                    sorted_index = np.where(sorted_indices_6 == lbl)[0][0]
+                    recolored_img_arr[i, j] = palette_colors[sorted_index]
 
-        with cols[col_count % 2]:
-            st.image(recolored_image, caption=f"Palette: {' - '.join(palette)}", use_container_width=False, width=dim)
-        col_count += 1
+            recolored_image = Image.fromarray(recolored_img_arr.astype('uint8'))
+
+            with cols[col_count % 2]:
+                st.image(recolored_image, caption=f"Palette: {' - '.join(palette)}", use_container_width=False, width=dim)
+            col_count += 1
