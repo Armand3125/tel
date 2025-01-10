@@ -14,23 +14,21 @@ pal = {
     "GA": (166, 169, 170), "VB": (94, 67, 183), "BF": (4, 47, 86),
 }
 
-# Listes de palettes fixes
-palettes = [
-    ["NC", "RE", "JO", "BJ"],
-    ["NC", "BM", "BG", "BJ"],
-    ["NC", "BM", "JO", "BJ"],
-    ["NC", "VB", "OM", "BJ"],
-]
-
-# Ajouter des palettes à 6 couleurs
-palettes_6 = [
-    ["NC", "VB", "RE", "OM", "JO", "BJ"],
-    ["NC", "BF", "BM", "BC", "BG", "BJ"],
-    ["NC", "VGa", "BM", "GA", "JO", "BJ"],  # Palette improvisée 1
-    ["NC", "BF", "VGa", "VG", "VL", "BJ"],  # Palette improvisée 2
-]
-
-st.title("Tylice Combiné")
+# Style personnalisé
+css = """
+    <style>
+        .stRadio div [data-testid="stMarkdownContainer"] p { display: none; }
+        .radio-container { display: flex; flex-direction: column; align-items: center; margin: 10px; }
+        .color-container { display: flex; flex-direction: column; align-items: center; margin-top: 5px; }
+        .color-box { border: 3px solid black; }
+        .stColumn { padding: 0 !important; }
+        .first-box { margin-top: 15px; }
+        .percentage-container { margin-bottom: 0; }
+        .button-container { margin-bottom: 20px; }
+        .dimension-text { font-size: 16px; font-weight: bold; color: #555; }
+    </style>
+"""
+st.markdown(css, unsafe_allow_html=True)
 
 # Téléchargement de l'image
 uploaded_image = st.file_uploader("Télécharger une image", type=["jpg", "jpeg", "png"])
@@ -78,26 +76,18 @@ if uploaded_image is not None and st.session_state.mode == "prepersonalisation":
     grayscale_values = np.dot(centers, [0.2989, 0.5870, 0.1140])
     sorted_indices = np.argsort(grayscale_values)
 
-    col_count = 0
-    cols = st.columns(2)
+    cols = st.columns(st.session_state.num_selections)
 
-    palettes_to_use = palettes if st.session_state.num_selections == 4 else palettes_6
+    selected_palette = [list(pal.values())[i % len(pal)] for i in range(st.session_state.num_selections)]
 
-    for palette in palettes_to_use:
-        palette_colors = [pal[color] for color in palette]
+    recolored_img_arr = np.zeros_like(img_arr)
+    for i in range(img_arr.shape[0]):
+        for j in range(img_arr.shape[1]):
+            lbl = labels[i * img_arr.shape[1] + j]
+            recolored_img_arr[i, j] = selected_palette[lbl]
 
-        recolored_img_arr = np.zeros_like(img_arr)
-        for i in range(img_arr.shape[0]):
-            for j in range(img_arr.shape[1]):
-                lbl = labels[i * img_arr.shape[1] + j]
-                sorted_index = np.where(sorted_indices == lbl)[0][0]
-                recolored_img_arr[i, j] = palette_colors[sorted_index]
-
-        recolored_image = Image.fromarray(recolored_img_arr.astype('uint8'))
-
-        with cols[col_count % 2]:
-            st.image(recolored_image, caption=f"Palette: {' - '.join(palette)}", use_container_width=False, width=dim)
-        col_count += 1
+    recolored_image = Image.fromarray(recolored_img_arr.astype('uint8'))
+    st.image(recolored_image, caption="Image avec palette pré-personnalisée", use_container_width=True)
 
 # Personnalisation avancée
 elif uploaded_image is not None and st.session_state.mode == "personnalisation":
@@ -130,40 +120,31 @@ elif uploaded_image is not None and st.session_state.mode == "personnalisation":
         cluster_percentages = (cluster_counts / total_pixels) * 100
 
         sorted_indices = np.argsort(-cluster_percentages)
-        sorted_percentages = cluster_percentages[sorted_indices]
         sorted_ordered_colors_by_cluster = [ordered_colors_by_cluster[i] for i in sorted_indices]
 
-        selected_colors = []
-        selected_color_names = []
         cols = st.columns(st.session_state.num_selections * 2)
 
+        selected_colors = []
         for i, cluster_index in enumerate(sorted_indices):
             with cols[i * 2]:
                 st.markdown("<div class='color-container'>", unsafe_allow_html=True)
-                for j, color_name in enumerate(sorted_ordered_colors_by_cluster[i]):
+                for color_name in sorted_ordered_colors_by_cluster[i]:
                     color_rgb = pal[color_name]
-                    margin_class = "first-box" if j == 0 else ""
                     st.markdown(
-                        f"<div class='color-box {margin_class}' style='background-color: rgb{color_rgb}; width: 80px; height: 20px; border-radius: 5px; margin-bottom: 4px;'></div>",
+                        f"<div class='color-box' style='background-color: rgb{color_rgb}; width: 80px; height: 20px; margin: 4px; border-radius: 5px;'></div>",
                         unsafe_allow_html=True
                     )
                 st.markdown("</div>", unsafe_allow_html=True)
 
             with cols[i * 2 + 1]:
-                selected_color_name = st.radio("", sorted_ordered_colors_by_cluster[i], key=f"radio_{i}", label_visibility="hidden")
-                selected_colors.append(pal[selected_color_name])
-                selected_color_names.append(selected_color_name)
+                selected_color = st.radio("Couleur", sorted_ordered_colors_by_cluster[i], key=f"color_{i}")
+                selected_colors.append(pal[selected_color])
 
-        new_img_arr = np.zeros_like(img_arr)
+        recolored_img_arr = np.zeros_like(img_arr)
         for i in range(img_arr.shape[0]):
             for j in range(img_arr.shape[1]):
                 lbl = labels[i * img_arr.shape[1] + j]
-                new_color_index = np.where(sorted_indices == lbl)[0][0]
-                new_img_arr[i, j] = selected_colors[new_color_index]
+                recolored_img_arr[i, j] = selected_colors[sorted_indices[lbl]]
 
-        new_image = Image.fromarray(new_img_arr.astype('uint8'))
-        resized_image = new_image
-
-        col1, col2, col3 = st.columns([1, 6, 1])
-        with col2:
-            st.image(resized_image, use_container_width=True)
+        recolored_image = Image.fromarray(recolored_img_arr.astype('uint8'))
+        st.image(recolored_image, caption="Image personnalisée", use_container_width=True)
