@@ -32,12 +32,16 @@ palettes_6 = [
 
 st.title("Tylice Simplifié")
 
-# Téléchargement de l'image
-uploaded_image = st.file_uploader("Télécharger une image", type=["jpg", "jpeg", "png"])
+# Initialiser l'état du bouton "Personnalisation avancée"
+if "advanced_button_state" not in st.session_state:
+    st.session_state.advanced_button_state = False
 
 # Initialiser le mode par défaut
 if "mode" not in st.session_state:
     st.session_state.mode = "4"
+
+# Texte du bouton basé sur l'état
+button_text = "Exemples" if st.session_state.advanced_button_state else "Personnalisation avancée"
 
 # Boutons pour sélectionner le mode
 col1, col2, col3 = st.columns([1, 1, 2])
@@ -48,77 +52,15 @@ with col2:
     if st.button("6 Couleurs : 12.95 €"):
         st.session_state.mode = "6"
 with col3:
-    if st.button("Personnalisation avancée"):
-        st.session_state.mode = "advanced"
+    if st.button(button_text):
+        st.session_state.advanced_button_state = not st.session_state.advanced_button_state
+        # Mettre à jour le mode si nécessaire
+        st.session_state.mode = "advanced" if st.session_state.advanced_button_state else "4"
 
-# Traitement de l'image téléchargée
-if uploaded_image is not None:
-    image = Image.open(uploaded_image).convert("RGB")
-    width, height = image.size
-    dim = 350  # Réduction à 350 pixels pour la plus grande dimension
-    new_width = dim if width > height else int((dim / height) * width)
-    new_height = dim if height >= width else int((dim / width) * height)
-
-    resized_image = image.resize((new_width, new_height))
-    img_arr = np.array(resized_image)
-
-    if st.session_state.mode == "4":
-        # Traitement pour 4 couleurs
-        pixels = img_arr.reshape(-1, 3)
-        kmeans = KMeans(n_clusters=4, random_state=0).fit(pixels)
-        labels = kmeans.labels_
-        centers = kmeans.cluster_centers_
-
-        grayscale_values = np.dot(centers, [0.2989, 0.5870, 0.1140])
-        sorted_indices = np.argsort(grayscale_values)
-
-        cols = st.columns(2)
-        col_count = 0
-
-        for palette in palettes:
-            palette_colors = [pal[color] for color in palette]
-
-            recolored_img_arr = np.zeros_like(img_arr)
-            for i in range(img_arr.shape[0]):
-                for j in range(img_arr.shape[1]):
-                    lbl = labels[i * img_arr.shape[1] + j]
-                    sorted_index = np.where(sorted_indices == lbl)[0][0]
-                    recolored_img_arr[i, j] = palette_colors[sorted_index]
-
-            recolored_image = Image.fromarray(recolored_img_arr.astype('uint8'))
-
-            with cols[col_count % 2]:
-                st.image(recolored_image, caption=f"Palette: {' - '.join(palette)}", use_container_width=False, width=dim)
-            col_count += 1
-
-    elif st.session_state.mode == "6":
-        # Traitement pour 6 couleurs
-        pixels = img_arr.reshape(-1, 3)
-        kmeans_6 = KMeans(n_clusters=6, random_state=0).fit(pixels)
-        labels_6 = kmeans_6.labels_
-        centers_6 = kmeans_6.cluster_centers_
-
-        grayscale_values_6 = np.dot(centers_6, [0.2989, 0.5870, 0.1140])
-        sorted_indices_6 = np.argsort(grayscale_values_6)
-
-        cols = st.columns(2)
-        col_count = 0
-
-        for palette in palettes_6:
-            palette_colors = [pal[color] for color in palette]
-
-            recolored_img_arr = np.zeros_like(img_arr)
-            for i in range(img_arr.shape[0]):
-                for j in range(img_arr.shape[1]):
-                    lbl = labels_6[i * img_arr.shape[1] + j]
-                    sorted_index = np.where(sorted_indices_6 == lbl)[0][0]
-                    recolored_img_arr[i, j] = palette_colors[sorted_index]
-
-            recolored_image = Image.fromarray(recolored_img_arr.astype('uint8'))
-
-            with cols[col_count % 2]:
-                st.image(recolored_image, caption=f"Palette: {' - '.join(palette)}", use_container_width=False, width=dim)
-            col_count += 1
-
-    elif st.session_state.mode == "advanced":
-        st.write("Mode de personnalisation avancée à venir...")
+# Affichage du mode sélectionné
+if st.session_state.mode == "4":
+    st.write("Mode 4 couleurs sélectionné.")
+elif st.session_state.mode == "6":
+    st.write("Mode 6 couleurs sélectionné.")
+elif st.session_state.mode == "advanced":
+    st.write("Mode personnalisation avancée activé.")
