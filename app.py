@@ -62,7 +62,7 @@ if "num_selections" not in st.session_state:
 if "mode" not in st.session_state:
     st.session_state.mode = "predefined"
 
-col1, col2 = st.columns([2, 5])
+col1, col2, col3, col4 = st.columns(4)
 
 with col1:
     if st.button("4 Couleurs : 7.95 €"):
@@ -72,7 +72,6 @@ with col2:
     if st.button("6 Couleurs : 11.95 €"):
         st.session_state.num_selections = 6
 
-col3, col4 = st.columns([2, 5])
 with col3:
     if st.button("Compositions pré-définies"):
         st.session_state.mode = "predefined"
@@ -167,7 +166,7 @@ elif uploaded_image is not None and st.session_state.mode == "custom":
                 for color_name in sorted_ordered_colors_by_cluster[i]:
                     color_rgb = pal[color_name]
                     st.markdown(
-                        f"<div class='color-box' style='background-color: rgb{color_rgb}; width: 80px; height: 20px; margin-bottom: 4px; margin: 4px; border-radius: 5px;'></div>",
+                        f"<div class='color-box' style='background-color: rgb{color_rgb}; width: 80px; height: 20px; margin: 4px; border-radius: 5px;'></div>",
                         unsafe_allow_html=True
                     )
                 st.markdown("</div>", unsafe_allow_html=True)
