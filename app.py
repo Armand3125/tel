@@ -66,13 +66,14 @@ st.markdown(css, unsafe_allow_html=True)
 uploaded_image = st.file_uploader("Télécharger une image", type=["jpg", "jpeg", "png"])
 
 # Sélection du nombre de couleurs
+col1, col2 = st.columns([2, 5])
+
 if uploaded_image is not None:
-    col1, col2 = st.columns([2, 5])
     with col1:
-        if st.button("4 Couleurs : 7.95 €", key="select_4"):
+        if st.button("4 Couleurs : 7.95 €", key="select_4_top"):
             st.session_state.num_selections = 4
     with col2:
-        if st.button("6 Couleurs : 11.95 €", key="select_6"):
+        if st.button("6 Couleurs : 11.95 €", key="select_6_top"):
             st.session_state.num_selections = 6
 
     # Initialisation du nombre de sélections
@@ -81,7 +82,19 @@ if uploaded_image is not None:
 
     num_selections = st.session_state.num_selections
 else:
-    num_selections = 4  # Valeur par défaut si aucune image n'est uploadée
+    # Affichage des boutons même sans image
+    with col1:
+        if st.button("4 Couleurs : 7.95 €", key="select_4_top_no_image"):
+            st.session_state.num_selections = 4
+    with col2:
+        if st.button("6 Couleurs : 11.95 €", key="select_6_top_no_image"):
+            st.session_state.num_selections = 6
+
+    # Initialisation du nombre de sélections
+    if "num_selections" not in st.session_state:
+        st.session_state.num_selections = 4  # Valeur par défaut
+
+    num_selections = st.session_state.num_selections
 
 # =========================================
 # Affichage des conseils d'utilisation
@@ -269,49 +282,68 @@ if uploaded_image is not None:
     # =========================================
     # Section 3: Exemples de Recoloration
     # =========================================
-    st.header("Exemples de Recoloration")
+    if uploaded_image is not None:
+        st.header("Exemples de Recoloration")
 
-    image = Image.open(uploaded_image).convert("RGB")
-    resized_image, img_arr, labels, sorted_indices, new_width, new_height = process_image(image, num_clusters=num_selections)
+        image = Image.open(uploaded_image).convert("RGB")
+        resized_image, img_arr, labels, sorted_indices, new_width, new_height = process_image(image, num_clusters=num_selections)
 
-    # Déterminer les palettes et le nombre de clusters
-    if num_selections == 4:
-        palettes = palettes_examples_4
-        num_clusters = 4
-    else:
-        palettes = palettes_examples_6
-        num_clusters = 6
-
-    # Affichage de l'image recolorée pour chaque palette (2 par ligne)
-    col_count = 0
-    cols_display = st.columns(2)
-
-    for palette in palettes:
-        palette_colors = [pal[color] for color in palette]
-
-        recolored_image = recolor_image(img_arr, labels, sorted_indices, palette_colors)
-
-        # Convert recolored image to buffer for upload
-        img_buffer = io.BytesIO()
-        recolored_image.save(img_buffer, format="PNG")
-        img_buffer.seek(0)
-
-        # Upload to Cloudinary
-        cloudinary_url = upload_to_cloudinary(img_buffer)
-
-        # Generate Shopify cart URL if upload is successful
-        if cloudinary_url:
-            shopify_cart_url = generate_shopify_cart_url(cloudinary_url, num_selections)
-            add_to_cart_button = f"<a href='{shopify_cart_url}' class='shopify-link' target='_blank'>Ajouter au panier</a>"
+        # Déterminer les palettes et le nombre de clusters
+        if num_selections == 4:
+            palettes = palettes_examples_4
+            num_clusters = 4
         else:
-            shopify_cart_url = None
-            add_to_cart_button = "Erreur lors de l'ajout au panier."
+            palettes = palettes_examples_6
+            num_clusters = 6
 
-        with cols_display[col_count % 2]:
-            st.image(recolored_image, caption=f"Palette: {' - '.join(palette)}", use_container_width=True, width=350)
+        # Affichage de l'image recolorée pour chaque palette (2 par ligne)
+        col_count = 0
+        cols_display = st.columns(2)
+
+        for palette in palettes:
+            palette_colors = [pal[color] for color in palette]
+
+            recolored_image = recolor_image(img_arr, labels, sorted_indices, palette_colors)
+
+            # Convert recolored image to buffer for upload
+            img_buffer = io.BytesIO()
+            recolored_image.save(img_buffer, format="PNG")
+            img_buffer.seek(0)
+
+            # Upload to Cloudinary
+            cloudinary_url = upload_to_cloudinary(img_buffer)
+
+            # Generate Shopify cart URL if upload is successful
             if cloudinary_url:
-                st.markdown(f"<div class='add-to-cart-button'>{add_to_cart_button}</div>", unsafe_allow_html=True)
+                shopify_cart_url = generate_shopify_cart_url(cloudinary_url, num_selections)
+                add_to_cart_button = f"<a href='{shopify_cart_url}' class='shopify-link' target='_blank'>Ajouter au panier</a>"
             else:
-                st.error("Erreur lors de l'upload de l'image.")
+                shopify_cart_url = None
+                add_to_cart_button = "Erreur lors de l'ajout au panier."
 
-        col_count += 1
+            with cols_display[col_count % 2]:
+                st.image(recolored_image, caption=f"Palette: {' - '.join(palette)}", use_container_width=True, width=350)
+                if cloudinary_url:
+                    st.markdown(f"<div class='add-to-cart-button'>{add_to_cart_button}</div>", unsafe_allow_html=True)
+                else:
+                    st.error("Erreur lors de l'upload de l'image.")
+
+            col_count += 1
+
+    # =========================================
+    # Section 4: Boutons de Sélection en Bas de Page
+    # =========================================
+    if uploaded_image is not None:
+        st.markdown("---")  # Ligne de séparation
+        st.subheader("Modifier le nombre de couleurs")
+
+        col3, col4 = st.columns([2, 5])
+        with col3:
+            if st.button("4 Couleurs : 7.95 €", key="select_4_bottom"):
+                st.session_state.num_selections = 4
+        with col4:
+            if st.button("6 Couleurs : 11.95 €", key="select_6_bottom"):
+                st.session_state.num_selections = 6
+
+        # Mise à jour du nombre de sélections
+        num_selections = st.session_state.num_selections
