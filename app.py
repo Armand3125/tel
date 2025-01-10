@@ -44,9 +44,13 @@ if uploaded_image is not None:
     labels = kmeans.labels_
     centers = kmeans.cluster_centers_
 
-    # Trier les clusters par niveau de gris
-    grayscale_values = np.dot(centers, [0.2989, 0.5870, 0.1140])
-    sorted_indices = np.argsort(grayscale_values)  # Indices triés des clusters
+    # Calculer les proportions des clusters
+    cluster_counts = np.bincount(labels)
+    total_pixels = len(labels)
+    cluster_percentages = cluster_counts / total_pixels
+
+    # Trier les clusters par proportion (ordre décroissant)
+    sorted_indices = np.argsort(-cluster_percentages)
 
     # Affichage de l'image recolorée pour chaque palette (2 par ligne)
     col_count = 0
@@ -63,7 +67,7 @@ if uploaded_image is not None:
                 recolored_img_arr[i, j] = palette_colors[sorted_index]
 
         recolored_image = Image.fromarray(recolored_img_arr.astype('uint8'))
-        
+
         with cols[col_count % 2]:
             st.image(recolored_image, caption=f"Palette: {' - '.join(palette)}", use_container_width=False, width=dim)
         col_count += 1
