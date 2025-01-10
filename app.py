@@ -159,10 +159,10 @@ elif uploaded_image is not None and st.session_state.mode == "custom":
 
         selected_colors = []
         selected_color_names = []
-        cols = st.columns(num_selections * 2)
+        cols = st.columns(num_selections)
 
         for i, cluster_index in enumerate(sorted_indices):
-            with cols[i * 2]:
+            with cols[i]:
                 st.markdown("<div class='color-container'>", unsafe_allow_html=True)
                 for color_name in sorted_ordered_colors_by_cluster[i]:
                     color_rgb = pal[color_name]
@@ -170,9 +170,6 @@ elif uploaded_image is not None and st.session_state.mode == "custom":
                         f"<div class='color-box' style='background-color: rgb{color_rgb}; width: 80px; height: 20px; margin: 4px; border-radius: 5px;'></div>",
                         unsafe_allow_html=True
                     )
-                st.markdown("</div>", unsafe_allow_html=True)
-
-            with cols[i * 2 + 1]:
                 selected_color_name = st.radio("", sorted_ordered_colors_by_cluster[i], key=f"radio_{i}", label_visibility="hidden")
                 selected_colors.append(pal[selected_color_name])
                 selected_color_names.append(selected_color_name)
