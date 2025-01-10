@@ -31,7 +31,7 @@ uploaded_image = st.file_uploader("Télécharger une image", type=["jpg", "jpeg"
 if uploaded_image is not None:
     image = Image.open(uploaded_image).convert("RGB")
     width, height = image.size
-    dim = 300  # Image affichée plus petite
+    dim = 350  # Réduction à 350 pixels pour la plus grande dimension
     new_width = dim if width > height else int((dim / height) * width)
     new_height = dim if height >= width else int((dim / width) * height)
 
