@@ -32,7 +32,8 @@ uploaded_image = st.file_uploader("Télécharger une image", type=["jpg", "jpeg"
 if "num_selections" not in st.session_state:
     st.session_state.num_selections = 4
 
-num_selections = st.session_state.num_selections
+# Limiter le nombre de sélections aux couleurs disponibles dans fixed_colors
+num_selections = min(st.session_state.num_selections, len(fixed_colors))
 
 # Traitement de l'image téléchargée
 if uploaded_image is not None:
@@ -58,7 +59,7 @@ if uploaded_image is not None:
 
         # Associer les couleurs fixes aux clusters
         sorted_indices = np.argsort(np.linalg.norm(centers, axis=1))  # Trier les clusters par luminosité
-        selected_colors = [pal[fixed_colors[i]] for i in range(num_selections)]
+        selected_colors = [pal[fixed_colors[i]] for i in sorted_indices[:num_selections]]
 
         new_img_arr = np.zeros_like(img_arr)
         for i in range(img_arr.shape[0]):
