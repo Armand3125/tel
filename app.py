@@ -11,15 +11,14 @@ pal = {
     "RE": (222, 67, 67), "BM": (0, 120, 191),
     "OM": (249, 153, 99), "VGa": (59, 102, 94),
     "BG": (163, 216, 225), "VM": (236, 0, 140),
-    "GA": (166, 169, 170), "VB": (94, 67, 183),
-    "BF": (4, 47, 86),
+    "GA": (166, 169, 170), "VB": (94, 67, 183), "BF": (4, 47, 86),
 }
 
 # Listes de palettes fixes
 palettes = [
     ["NC", "RE", "JO", "BJ"],
-    ["NC", "BF", "BG", "BJ"],
-    ["NC", "BM", "BC", "JO"],
+    ["NC", "BM", "BG", "BJ"],
+    ["NC", "BF", "BC", "JO"],
     ["NC", "VB", "VL", "BJ"]
 ]
 
@@ -49,7 +48,10 @@ if uploaded_image is not None:
     grayscale_values = np.dot(centers, [0.2989, 0.5870, 0.1140])
     sorted_indices = np.argsort(grayscale_values)  # Indices triés des clusters
 
-    # Affichage de l'image recolorée pour chaque palette
+    # Affichage de l'image recolorée pour chaque palette (2 par ligne)
+    col_count = 0
+    cols = st.columns(2)
+
     for palette in palettes:
         palette_colors = [pal[color] for color in palette]
 
@@ -61,4 +63,7 @@ if uploaded_image is not None:
                 recolored_img_arr[i, j] = palette_colors[sorted_index]
 
         recolored_image = Image.fromarray(recolored_img_arr.astype('uint8'))
-        st.image(recolored_image, caption=f"Palette: {' - '.join(palette)}", use_container_width=False, width=dim)
+        
+        with cols[col_count % 2]:
+            st.image(recolored_image, caption=f"Palette: {' - '.join(palette)}", use_container_width=False, width=dim)
+        col_count += 1
