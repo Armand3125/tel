@@ -60,20 +60,7 @@ css = """
 st.markdown(css, unsafe_allow_html=True)
 
 # =========================================
-# Section 1: Affichage des conseils d'utilisation
-# =========================================
-st.markdown("""
-    ### 📝 Conseils d'utilisation :
-    - Les couleurs les plus compatibles avec l'image apparaissent en premier.
-    - Préférez des images avec un bon contraste et des éléments bien définis.
-    - Une **image carrée** donnera un meilleur résultat.
-    - Il est recommandé d'inclure au moins une **zone de noir ou de blanc** pour assurer un bon contraste.
-    - Utiliser des **familles de couleurs** (ex: blanc, jaune, orange, rouge) peut produire des résultats visuellement intéressants.
-    - **Expérimentez** avec différentes combinaisons pour trouver l'esthétique qui correspond le mieux à votre projet !
-""", unsafe_allow_html=True)
-
-# =========================================
-# Section 2: Téléchargement et Sélection
+# Section 1: Téléchargement et Sélection
 # =========================================
 # Téléchargement de l'image
 uploaded_image = st.file_uploader("Télécharger une image", type=["jpg", "jpeg", "png"])
@@ -93,7 +80,26 @@ if uploaded_image is not None:
         st.session_state.num_selections = 4  # Valeur par défaut
 
     num_selections = st.session_state.num_selections
+else:
+    num_selections = 4  # Valeur par défaut si aucune image n'est uploadée
 
+# =========================================
+# Affichage des conseils d'utilisation
+# =========================================
+st.markdown("""
+    ### 📝 Conseils d'utilisation :
+    - Les couleurs les plus compatibles avec l'image apparaissent en premier.
+    - Préférez des images avec un bon contraste et des éléments bien définis.
+    - Une **image carrée** donnera un meilleur résultat.
+    - Il est recommandé d'inclure au moins une **zone de noir ou de blanc** pour assurer un bon contraste.
+    - Utiliser des **familles de couleurs** (ex: blanc, jaune, orange, rouge) peut produire des résultats visuellement intéressants.
+    - **Expérimentez** avec différentes combinaisons pour trouver l'esthétique qui correspond le mieux à votre projet !
+""", unsafe_allow_html=True)
+
+# =========================================
+# Sections conditionnelles après upload d'image
+# =========================================
+if uploaded_image is not None:
     # =========================================
     # Fonctionnalités Réutilisables
     # =========================================
@@ -164,7 +170,7 @@ if uploaded_image is not None:
         return recolored_image
 
     # =========================================
-    # Section 3: Personalisations
+    # Section 2: Personalisations
     # =========================================
     st.header("Personalisations")
 
@@ -260,10 +266,9 @@ if uploaded_image is not None:
             with col3_cart:
                 st.markdown(f"<a href='{shopify_cart_url_pers}' class='shopify-link' target='_blank'>Ajouter au panier</a>", unsafe_allow_html=True)
 
-# =========================================
-# Section 4: Exemples de Recoloration
-# =========================================
-if uploaded_image is not None:
+    # =========================================
+    # Section 3: Exemples de Recoloration
+    # =========================================
     st.header("Exemples de Recoloration")
 
     image = Image.open(uploaded_image).convert("RGB")
@@ -310,8 +315,3 @@ if uploaded_image is not None:
                 st.error("Erreur lors de l'upload de l'image.")
 
         col_count += 1
-
-# =========================================
-# Affichage des conseils d'utilisation (déplacé en haut)
-# =========================================
-# Déplacé en haut du script, déjà affiché au début
