@@ -41,12 +41,12 @@ css = """
     <style>
         .stRadio div [data-testid="stMarkdownContainer"] p { display: none; }
         .radio-container { display: flex; flex-direction: column; align-items: center; margin: 10px; }
-        .color-container { display: flex; flex-direction: column; align-items: center; margin-top: 5px; }
-        .color-box { border: 3px solid black; }
+        .color-container { display: flex; flex-direction: row; align-items: center; margin-top: 5px; }
+        .color-box { border: 3px solid black; margin-right: 10px; }
         .stColumn { padding: 0 !important; }
         .first-box { margin-top: 15px; }
         .percentage-container { margin-bottom: 0; }
-        .button-container { margin-bottom: 10px; }
+        .button-container { margin-bottom: 20px; }
         .shopify-link { font-size: 20px; font-weight: bold; text-decoration: none; color: #2e86de; }
         .dimension-text { font-size: 16px; font-weight: bold; color: #555; }
     </style>
@@ -159,30 +159,25 @@ elif uploaded_image is not None and st.session_state.mode == "custom":
 
         selected_colors = []
         selected_color_names = []
-        cols = st.columns(num_selections * 2)
+        cols = st.columns(num_selections)
 
         for i, cluster_index in enumerate(sorted_indices):
-            with cols[i * 2]:
+            with cols[i]:
                 st.markdown("<div class='color-container'>", unsafe_allow_html=True)
                 for color_name in sorted_ordered_colors_by_cluster[i]:
                     color_rgb = pal[color_name]
                     st.markdown(
-                        f"<div class='color-box' style='background-color: rgb{color_rgb}; width: 80px; height: 20px; margin: 4px; border-radius: 5px;'></div>",
+                        f"<div class='color-box' style='background-color: rgb{color_rgb}; width: 80px; height: 20px; margin: 4px; border-radius: 5px; display: inline-block;'></div>",
                         unsafe_allow_html=True
                     )
-                st.markdown("</div>", unsafe_allow_html=True)
-
-            with cols[i * 2 + 1]:
-                selected_color_name = st.radio("", sorted_ordered_colors_by_cluster[i], key=f"radio_{i}", label_visibility="hidden")
-                selected_colors.append(pal[selected_color_name])
-                selected_color_names.append(selected_color_name)
+                st.radio("", sorted_ordered_colors_by_cluster[i], key=f"radio_{i}", label_visibility="hidden")
 
         recolored_img_arr = np.zeros_like(img_arr)
         for i in range(img_arr.shape[0]):
             for j in range(img_arr.shape[1]):
                 lbl = labels[i * img_arr.shape[1] + j]
                 new_color_index = np.where(sorted_indices == lbl)[0][0]
-                recolored_img_arr[i, j] = selected_colors[new_color_index]
+                recolored_img_arr[i, j] = pal[sorted_ordered_colors_by_cluster[new_color_index][0]]
 
         new_image = Image.fromarray(recolored_img_arr.astype('uint8'))
         st.image(new_image, caption="Image personnalisée", use_container_width=True)
