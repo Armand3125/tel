@@ -57,9 +57,12 @@ if uploaded_image is not None:
         labels = kmeans.labels_
         centers = kmeans.cluster_centers_
 
+        # Calculer les niveaux de gris pour chaque cluster
+        grayscale_values = np.dot(centers, [0.2989, 0.5870, 0.1140])
+        sorted_indices = np.argsort(grayscale_values)  # Trier par niveaux de gris
+
         # Associer les couleurs fixes aux clusters
-        sorted_indices = np.argsort(np.linalg.norm(centers, axis=1))  # Trier les clusters par luminosité
-        selected_colors = [pal[fixed_colors[i]] for i in sorted_indices[:num_selections]]
+        selected_colors = [pal[fixed_colors[i]] for i in range(num_selections)]
 
         new_img_arr = np.zeros_like(img_arr)
         for i in range(img_arr.shape[0]):
