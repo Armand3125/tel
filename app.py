@@ -19,7 +19,7 @@ palettes = [
     ["NC", "RE", "JO", "BJ"],
     ["NC", "BM", "BG", "BJ"],
     ["NC", "BF", "BC", "JO"],
-    ["NC", "VB", "VG", "VM"],
+    ["NC", "VB", "RE", "VL"],
 ]
 
 # Ajouter des palettes à 6 couleurs
