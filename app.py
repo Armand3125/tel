@@ -62,7 +62,6 @@ st.markdown(css, unsafe_allow_html=True)
 # =========================================
 # Section 1: Téléchargement et Sélection
 # =========================================
-# Téléchargement de l'image
 uploaded_image = st.file_uploader("Télécharger une image", type=["jpg", "jpeg", "png"])
 
 # Sélection du nombre de couleurs
@@ -82,7 +81,6 @@ if uploaded_image is not None:
 
     num_selections = st.session_state.num_selections
 else:
-    # Affichage des boutons même sans image
     with col1:
         if st.button("4 Couleurs : 7.95 €", key="select_4_top_no_image"):
             st.session_state.num_selections = 4
@@ -347,3 +345,7 @@ if uploaded_image is not None:
 
         # Mise à jour du nombre de sélections
         num_selections = st.session_state.num_selections
+
+# =========================================
+# Fin de l'application
+# =========================================
