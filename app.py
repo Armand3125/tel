@@ -18,7 +18,7 @@ pal = {
 palettes = [
     ["NC", "RE", "JO", "BJ"],
     ["NC", "BM", "BG", "BJ"],
-    ["NC", "BC", "JO", "BJ"],
+    ["NC", "BM", "JO", "BJ"],
     ["NC", "VB", "OM", "BJ"],
 ]
 
