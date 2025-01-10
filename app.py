@@ -30,93 +30,105 @@ palettes_6 = [
     ["NC", "BF", "VGa", "VG", "VL", "BJ"],  # Palette improvisée 2
 ]
 
-st.title("Tylice Simplifié")
+st.title("Tylice Combiné")
 
 # Téléchargement de l'image
 uploaded_image = st.file_uploader("Télécharger une image", type=["jpg", "jpeg", "png"])
 
-# Boutons pour sélectionner le mode
+# Choix entre propositions et personnalisation
 if "mode" not in st.session_state:
-    st.session_state.mode = "4"
+    st.session_state.mode = "propositions"
 
 if uploaded_image is not None:
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("4 Couleurs : 7.95 €"):
-            st.session_state.mode = "4"
+        if st.button("Propositions pré-faites"):
+            st.session_state.mode = "propositions"
     with col2:
-        if st.button("6 Couleurs : 12.95 €"):
-            st.session_state.mode = "6"
+        if st.button("Personnalisation avancée"):
+            st.session_state.mode = "personnalisation"
 
-# Traitement de l'image téléchargée
-if uploaded_image is not None:
+# Afficher les propositions
+if uploaded_image is not None and st.session_state.mode == "propositions":
     image = Image.open(uploaded_image).convert("RGB")
     width, height = image.size
-    dim = 350  # Réduction à 350 pixels pour la plus grande dimension
+    dim = 350
     new_width = dim if width > height else int((dim / height) * width)
     new_height = dim if height >= width else int((dim / width) * height)
 
     resized_image = image.resize((new_width, new_height))
     img_arr = np.array(resized_image)
 
-    if st.session_state.mode == "4":
-        # Trouver 4 clusters avec KMeans
-        pixels = img_arr.reshape(-1, 3)
-        kmeans = KMeans(n_clusters=4, random_state=0).fit(pixels)
-        labels = kmeans.labels_
-        centers = kmeans.cluster_centers_
+    pixels = img_arr.reshape(-1, 3)
+    kmeans = KMeans(n_clusters=4, random_state=0).fit(pixels)
+    labels = kmeans.labels_
+    centers = kmeans.cluster_centers_
 
-        # Calculer les niveaux de gris des clusters
-        grayscale_values = np.dot(centers, [0.2989, 0.5870, 0.1140])
-        sorted_indices = np.argsort(grayscale_values)  # Trier du plus sombre au plus clair
+    grayscale_values = np.dot(centers, [0.2989, 0.5870, 0.1140])
+    sorted_indices = np.argsort(grayscale_values)
 
-        # Affichage de l'image recolorée pour chaque palette (2 par ligne)
-        col_count = 0
-        cols = st.columns(2)
+    col_count = 0
+    cols = st.columns(2)
 
-        for palette in palettes:
-            palette_colors = [pal[color] for color in palette]
+    for palette in palettes:
+        palette_colors = [pal[color] for color in palette]
 
-            recolored_img_arr = np.zeros_like(img_arr)
-            for i in range(img_arr.shape[0]):
-                for j in range(img_arr.shape[1]):
-                    lbl = labels[i * img_arr.shape[1] + j]
-                    sorted_index = np.where(sorted_indices == lbl)[0][0]
-                    recolored_img_arr[i, j] = palette_colors[sorted_index]
+        recolored_img_arr = np.zeros_like(img_arr)
+        for i in range(img_arr.shape[0]):
+            for j in range(img_arr.shape[1]):
+                lbl = labels[i * img_arr.shape[1] + j]
+                sorted_index = np.where(sorted_indices == lbl)[0][0]
+                recolored_img_arr[i, j] = palette_colors[sorted_index]
 
-            recolored_image = Image.fromarray(recolored_img_arr.astype('uint8'))
+        recolored_image = Image.fromarray(recolored_img_arr.astype('uint8'))
 
-            with cols[col_count % 2]:
-                st.image(recolored_image, caption=f"Palette: {' - '.join(palette)}", use_container_width=False, width=dim)
-            col_count += 1
+        with cols[col_count % 2]:
+            st.image(recolored_image, caption=f"Palette: {' - '.join(palette)}", use_container_width=False, width=dim)
+        col_count += 1
 
-    elif st.session_state.mode == "6":
-        # Trouver 6 clusters avec KMeans
-        pixels = img_arr.reshape(-1, 3)
-        kmeans_6 = KMeans(n_clusters=6, random_state=0).fit(pixels)
-        labels_6 = kmeans_6.labels_
-        centers_6 = kmeans_6.cluster_centers_
+# Afficher la personnalisation
+elif uploaded_image is not None and st.session_state.mode == "personnalisation":
+    image = Image.open(uploaded_image).convert("RGB")
+    width, height = image.size
+    dim = 350
+    new_width = dim if width > height else int((dim / height) * width)
+    new_height = dim if height >= width else int((dim / width) * height)
 
-        # Calculer les niveaux de gris des clusters pour 6 couleurs
-        grayscale_values_6 = np.dot(centers_6, [0.2989, 0.5870, 0.1140])
-        sorted_indices_6 = np.argsort(grayscale_values_6)  # Trier du plus sombre au plus clair
+    resized_image = image.resize((new_width, new_height))
+    img_arr = np.array(resized_image)
 
-        # Affichage de l'image recolorée pour chaque palette à 6 couleurs
-        col_count = 0
-        cols = st.columns(2)
+    st.write("Choisissez le nombre de couleurs :")
+    num_selections = st.radio("Nombre de couleurs", [4, 6], index=0, horizontal=True)
 
-        for palette in palettes_6:
-            palette_colors = [pal[color] for color in palette]
+    kmeans = KMeans(n_clusters=num_selections, random_state=0).fit(img_arr.reshape(-1, 3))
+    labels = kmeans.labels_
+    centers = kmeans.cluster_centers_
 
-            recolored_img_arr = np.zeros_like(img_arr)
-            for i in range(img_arr.shape[0]):
-                for j in range(img_arr.shape[1]):
-                    lbl = labels_6[i * img_arr.shape[1] + j]
-                    sorted_index = np.where(sorted_indices_6 == lbl)[0][0]
-                    recolored_img_arr[i, j] = palette_colors[sorted_index]
+    cluster_counts = np.bincount(labels)
+    total_pixels = len(labels)
+    cluster_percentages = (cluster_counts / total_pixels) * 100
 
-            recolored_image = Image.fromarray(recolored_img_arr.astype('uint8'))
+    sorted_indices = np.argsort(-cluster_percentages)
+    cols = st.columns(num_selections * 2)
 
-            with cols[col_count % 2]:
-                st.image(recolored_image, caption=f"Palette: {' - '.join(palette)}", use_container_width=False, width=dim)
-            col_count += 1
+    selected_colors = []
+    for i, cluster_index in enumerate(sorted_indices):
+        with cols[i * 2]:
+            st.write(f"Cluster {i+1} : {cluster_percentages[cluster_index]:.2f}%")
+        with cols[i * 2 + 1]:
+            color_name = st.radio(
+                f"Couleurs pour Cluster {i+1}",
+                list(pal.keys()),
+                index=0,
+                key=f"color_{i}",
+            )
+            selected_colors.append(pal[color_name])
+
+    recolored_img_arr = np.zeros_like(img_arr)
+    for i in range(img_arr.shape[0]):
+        for j in range(img_arr.shape[1]):
+            lbl = labels[i * img_arr.shape[1] + j]
+            recolored_img_arr[i, j] = selected_colors[lbl]
+
+    recolored_image = Image.fromarray(recolored_img_arr.astype('uint8'))
+    st.image(recolored_image, caption="Image Personnalisée", use_container_width=True)
