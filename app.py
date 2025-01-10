@@ -32,20 +32,21 @@ palettes_6 = [
 
 st.title("Tylice Simplifié")
 
+# Téléchargement de l'image
+uploaded_image = st.file_uploader("Télécharger une image", type=["jpg", "jpeg", "png"])
+
 # Boutons pour sélectionner le mode
 if "mode" not in st.session_state:
     st.session_state.mode = "4"
 
-col1, col2 = st.columns(2)
-with col1:
-    if st.button("4 Couleurs"):
-        st.session_state.mode = "4"
-with col2:
-    if st.button("6 Couleurs"):
-        st.session_state.mode = "6"
-
-# Téléchargement de l'image
-uploaded_image = st.file_uploader("Télécharger une image", type=["jpg", "jpeg", "png"])
+if uploaded_image is not None:
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("4 Couleurs : 7.95 €"):
+            st.session_state.mode = "4"
+    with col2:
+        if st.button("6 Couleurs : 12.95 €"):
+            st.session_state.mode = "6"
 
 # Traitement de l'image téléchargée
 if uploaded_image is not None:
