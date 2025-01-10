@@ -40,7 +40,7 @@ st.title("Tylice")
 css = """
     <style>
         .stRadio div [data-testid="stMarkdownContainer"] p { display: none; }
-        .radio-container { display: flex; flex-direction: column; align-items: center; margin: 10px; }
+        .radio-container { display: flex; flex-direction: column; align-items: center; margin: 20px; }
         .color-container { display: flex; flex-direction: column; align-items: center; margin-top: 5px; }
         .color-box { border: 3px solid black; }
         .stColumn { padding: 0 !important; }
