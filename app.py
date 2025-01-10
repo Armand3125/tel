@@ -23,6 +23,14 @@ fixed_colors = {
     3: "BJ"   # Blanc jade
 }
 
+# Listes de palettes fixes
+palettes = [
+    ["NC", "RE", "JO", "BJ"],
+    ["NC", "BF", "BG", "BJ"],
+    ["NC", "BM", "BC", "JO"],
+    ["NC", "VB", "VL", "BJ"]
+]
+
 st.title("Tylice Simplifié")
 
 # Téléchargement de l'image
@@ -39,7 +47,7 @@ num_selections = min(st.session_state.num_selections, len(fixed_colors))
 if uploaded_image is not None:
     image = Image.open(uploaded_image).convert("RGB")
     width, height = image.size
-    dim = 350
+    dim = 300  # Image affichée plus petite
     new_width = dim if width > height else int((dim / height) * width)
     new_height = dim if height >= width else int((dim / width) * height)
 
@@ -73,7 +81,19 @@ if uploaded_image is not None:
 
         new_image = Image.fromarray(new_img_arr.astype('uint8'))
 
-        st.image(new_image, caption="Image transformée", use_container_width=True)
+        # Affichage de l'image transformée
+        st.image(new_image, caption="Image transformée", use_container_width=False, width=dim)
+
+        # Affichage des palettes fixes
+        for palette in palettes:
+            palette_colors = [pal[color] for color in palette]
+            palette_image = np.zeros((50, 200, 3), dtype=np.uint8)
+            section_width = 200 // len(palette_colors)
+
+            for idx, color in enumerate(palette_colors):
+                palette_image[:, idx * section_width:(idx + 1) * section_width] = color
+
+            st.image(palette_image, caption=f"Palette: {' - '.join(palette)}", use_container_width=False, width=200)
 
 # Affichage des conseils d'utilisation
 st.markdown("""
