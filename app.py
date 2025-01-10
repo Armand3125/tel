@@ -60,139 +60,45 @@ css = """
 st.markdown(css, unsafe_allow_html=True)
 
 # =========================================
-# Section 1: Téléchargement et Sélection
+# Section 1: Téléchargement de l'image
 # =========================================
-# Téléchargement de l'image
 uploaded_image = st.file_uploader("Télécharger une image", type=["jpg", "jpeg", "png"])
-
-# Sélection du nombre de couleurs
-col1, col2 = st.columns([2, 5])
-
-if uploaded_image is not None:
-    with col1:
-        if st.button("4 Couleurs : 7.95 €", key="select_4_top"):
-            st.session_state.num_selections = 4
-    with col2:
-        if st.button("6 Couleurs : 11.95 €", key="select_6_top"):
-            st.session_state.num_selections = 6
-
-    # Initialisation du nombre de sélections
-    if "num_selections" not in st.session_state:
-        st.session_state.num_selections = 4  # Valeur par défaut
-
-    num_selections = st.session_state.num_selections
-else:
-    # Affichage des boutons même sans image
-    with col1:
-        if st.button("4 Couleurs : 7.95 €", key="select_4_top_no_image"):
-            st.session_state.num_selections = 4
-    with col2:
-        if st.button("6 Couleurs : 11.95 €", key="select_6_top_no_image"):
-            st.session_state.num_selections = 6
-
-    # Initialisation du nombre de sélections
-    if "num_selections" not in st.session_state:
-        st.session_state.num_selections = 4  # Valeur par défaut
-
-    num_selections = st.session_state.num_selections
-
-# =========================================
-# Affichage des conseils d'utilisation
-# =========================================
-st.markdown("""
-    ### 📝 Conseils d'utilisation :
-    - Les couleurs les plus compatibles avec l'image apparaissent en premier.
-    - Préférez des images avec un bon contraste et des éléments bien définis.
-    - Une **image carrée** donnera un meilleur résultat.
-    - Il est recommandé d'inclure au moins une **zone de noir ou de blanc** pour assurer un bon contraste.
-    - Utiliser des **familles de couleurs** (ex: blanc, jaune, orange, rouge) peut produire des résultats visuellement intéressants.
-    - **Expérimentez** avec différentes combinaisons pour trouver l'esthétique qui correspond le mieux à votre projet !
-""", unsafe_allow_html=True)
 
 # =========================================
 # Sections conditionnelles après upload d'image
 # =========================================
 if uploaded_image is not None:
     # =========================================
-    # Fonctionnalités Réutilisables
+    # Section 2: Sélection du nombre de couleurs
     # =========================================
+    col1, col2 = st.columns([2, 5])
 
-    def upload_to_cloudinary(image_buffer):
-        """
-        Uploads an image to Cloudinary and returns the secure URL.
-        """
-        url = "https://api.cloudinary.com/v1_1/dprmsetgi/image/upload"
-        files = {"file": image_buffer}
-        data = {"upload_preset": "image_upload_tylice"}
-        try:
-            response = requests.post(url, files=files, data=data)
-            if response.status_code == 200:
-                return response.json()["secure_url"]
-            else:
-                st.error(f"Erreur Cloudinary: {response.text}")
-                return None
-        except Exception as e:
-            st.error(f"Erreur Cloudinary: {e}")
-            return None
+    with col1:
+        if st.button("4 Couleurs : 7.95 €", key="select_4"):
+            st.session_state.num_selections = 4
+    with col2:
+        if st.button("6 Couleurs : 11.95 €", key="select_6"):
+            st.session_state.num_selections = 6
 
-    def generate_shopify_cart_url(cloudinary_url, num_colors):
-        """
-        Generates a Shopify cart URL with the given image URL and variant ID based on the number of colors.
-        """
-        variant_id = "50063717106003" if num_colors == 4 else "50063717138771"
-        encoded_image_url = urllib.parse.quote(cloudinary_url)
-        shopify_cart_url = (
-            f"https://tylice2.myshopify.com/cart/add?id={variant_id}&quantity=1&properties[Image]={encoded_image_url}"
-        )
-        return shopify_cart_url
+    # Initialisation du nombre de sélections si non défini
+    if "num_selections" not in st.session_state:
+        st.session_state.num_selections = 4  # Valeur par défaut
 
-    def process_image(image, num_clusters):
-        """
-        Processes the image by resizing and applying KMeans clustering.
-        Returns the resized image array, labels, and sorted cluster indices.
-        """
-        width, height = image.size
-        dim = 350  # Réduction à 350 pixels pour la plus grande dimension
-        new_width = dim if width > height else int((dim / height) * width)
-        new_height = dim if height >= width else int((dim / width) * height)
-
-        resized_image = image.resize((new_width, new_height))
-        img_arr = np.array(resized_image)
-
-        pixels = img_arr.reshape(-1, 3)
-        kmeans = KMeans(n_clusters=num_clusters, random_state=0).fit(pixels)
-        labels = kmeans.labels_
-        centers = kmeans.cluster_centers_
-
-        grayscale_values = np.dot(centers, [0.2989, 0.5870, 0.1140])
-        sorted_indices = np.argsort(grayscale_values)  # Trier du plus sombre au plus clair
-
-        return resized_image, img_arr, labels, sorted_indices, new_width, new_height
-
-    def recolor_image(img_arr, labels, sorted_indices, palette_colors):
-        """
-        Recolors the image array based on the provided palette colors.
-        """
-        recolored_img_arr = np.zeros_like(img_arr)
-        for i in range(img_arr.shape[0]):
-            for j in range(img_arr.shape[1]):
-                lbl = labels[i * img_arr.shape[1] + j]
-                sorted_index = np.where(sorted_indices == lbl)[0][0]
-                recolored_img_arr[i, j] = palette_colors[sorted_index]
-        recolored_image = Image.fromarray(recolored_img_arr.astype('uint8'))
-        return recolored_image
+    num_selections = st.session_state.num_selections
 
     # =========================================
-    # Section 2: Personalisations
+    # Section 3: Personnalisations
     # =========================================
-    st.header("Personalisations")
+    st.header("Personnalisations")
 
     rectangle_width = 80 if num_selections == 4 else 50
     rectangle_height = 20
     cols_personalization = st.columns(num_selections * 2)
 
     image_pers = Image.open(uploaded_image).convert("RGB")
-    resized_image_pers, img_arr_pers, labels_pers, sorted_indices_pers, new_width_pers, new_height_pers = process_image(image_pers, num_clusters=num_selections)
+    resized_image_pers, img_arr_pers, labels_pers, sorted_indices_pers, new_width_pers, new_height_pers = process_image(
+        image_pers, num_clusters=num_selections
+    )
 
     # Conversion de pixels à centimètres (350px = 14cm, soit 25px/cm)
     px_per_cm = 25
@@ -280,52 +186,133 @@ if uploaded_image is not None:
                 st.markdown(f"<a href='{shopify_cart_url_pers}' class='shopify-link' target='_blank'>Ajouter au panier</a>", unsafe_allow_html=True)
 
     # =========================================
-    # Section 3: Exemples de Recoloration
+    # Section 4: Exemples de Recoloration
     # =========================================
-    if uploaded_image is not None:
-        st.header("Exemples de Recoloration")
+    st.header("Exemples de Recoloration")
 
-        image = Image.open(uploaded_image).convert("RGB")
-        resized_image, img_arr, labels, sorted_indices, new_width, new_height = process_image(image, num_clusters=num_selections)
+    image = Image.open(uploaded_image).convert("RGB")
+    resized_image, img_arr, labels, sorted_indices, new_width, new_height = process_image(image, num_clusters=num_selections)
 
-        # Déterminer les palettes et le nombre de clusters
-        if num_selections == 4:
-            palettes = palettes_examples_4
-            num_clusters = 4
+    # Déterminer les palettes et le nombre de clusters
+    if num_selections == 4:
+        palettes = palettes_examples_4
+        num_clusters = 4
+    else:
+        palettes = palettes_examples_6
+        num_clusters = 6
+
+    # Affichage de l'image recolorée pour chaque palette (2 par ligne)
+    col_count = 0
+    cols_display = st.columns(2)
+
+    for palette in palettes:
+        palette_colors = [pal[color] for color in palette]
+
+        recolored_image = recolor_image(img_arr, labels, sorted_indices, palette_colors)
+
+        # Convert recolored image to buffer for upload
+        img_buffer = io.BytesIO()
+        recolored_image.save(img_buffer, format="PNG")
+        img_buffer.seek(0)
+
+        # Upload to Cloudinary
+        cloudinary_url = upload_to_cloudinary(img_buffer)
+
+        # Generate Shopify cart URL if upload is successful
+        if cloudinary_url:
+            shopify_cart_url = generate_shopify_cart_url(cloudinary_url, num_selections)
+            add_to_cart_button = f"<a href='{shopify_cart_url}' class='shopify-link' target='_blank'>Ajouter au panier</a>"
         else:
-            palettes = palettes_examples_6
-            num_clusters = 6
+            shopify_cart_url = None
+            add_to_cart_button = "Erreur lors de l'ajout au panier."
 
-        # Affichage de l'image recolorée pour chaque palette (2 par ligne)
-        col_count = 0
-        cols_display = st.columns(2)
-
-        for palette in palettes:
-            palette_colors = [pal[color] for color in palette]
-
-            recolored_image = recolor_image(img_arr, labels, sorted_indices, palette_colors)
-
-            # Convert recolored image to buffer for upload
-            img_buffer = io.BytesIO()
-            recolored_image.save(img_buffer, format="PNG")
-            img_buffer.seek(0)
-
-            # Upload to Cloudinary
-            cloudinary_url = upload_to_cloudinary(img_buffer)
-
-            # Generate Shopify cart URL if upload is successful
+        with cols_display[col_count % 2]:
+            st.image(recolored_image, caption=f"Palette: {' - '.join(palette)}", use_container_width=True, width=350)
             if cloudinary_url:
-                shopify_cart_url = generate_shopify_cart_url(cloudinary_url, num_selections)
-                add_to_cart_button = f"<a href='{shopify_cart_url}' class='shopify-link' target='_blank'>Ajouter au panier</a>"
+                st.markdown(f"<div class='add-to-cart-button'>{add_to_cart_button}</div>", unsafe_allow_html=True)
             else:
-                shopify_cart_url = None
-                add_to_cart_button = "Erreur lors de l'ajout au panier."
+                st.error("Erreur lors de l'upload de l'image.")
 
-            with cols_display[col_count % 2]:
-                st.image(recolored_image, caption=f"Palette: {' - '.join(palette)}", use_container_width=True, width=350)
-                if cloudinary_url:
-                    st.markdown(f"<div class='add-to-cart-button'>{add_to_cart_button}</div>", unsafe_allow_html=True)
-                else:
-                    st.error("Erreur lors de l'upload de l'image.")
+        col_count += 1
 
-            col_count += 1
+# =========================================
+# Section 5: Affichage des conseils d'utilisation
+# =========================================
+st.markdown("""
+    ### 📝 Conseils d'utilisation :
+    - Les couleurs les plus compatibles avec l'image apparaissent en premier.
+    - Préférez des images avec un bon contraste et des éléments bien définis.
+    - Une **image carrée** donnera un meilleur résultat.
+    - Il est recommandé d'inclure au moins une **zone de noir ou de blanc** pour assurer un bon contraste.
+    - Utiliser des **familles de couleurs** (ex: blanc, jaune, orange, rouge) peut produire des résultats visuellement intéressants.
+    - **Expérimentez** avec différentes combinaisons pour trouver l'esthétique qui correspond le mieux à votre projet !
+""", unsafe_allow_html=True)
+
+# =========================================
+# Fonctionnalités Réutilisables
+# =========================================
+
+def upload_to_cloudinary(image_buffer):
+    """
+    Uploads an image to Cloudinary and returns the secure URL.
+    """
+    url = "https://api.cloudinary.com/v1_1/dprmsetgi/image/upload"
+    files = {"file": image_buffer}
+    data = {"upload_preset": "image_upload_tylice"}
+    try:
+        response = requests.post(url, files=files, data=data)
+        if response.status_code == 200:
+            return response.json()["secure_url"]
+        else:
+            st.error(f"Erreur Cloudinary: {response.text}")
+            return None
+    except Exception as e:
+        st.error(f"Erreur Cloudinary: {e}")
+        return None
+
+def generate_shopify_cart_url(cloudinary_url, num_colors):
+    """
+    Generates a Shopify cart URL with the given image URL and variant ID based on the number of colors.
+    """
+    variant_id = "50063717106003" if num_colors == 4 else "50063717138771"
+    encoded_image_url = urllib.parse.quote(cloudinary_url)
+    shopify_cart_url = (
+        f"https://tylice2.myshopify.com/cart/add?id={variant_id}&quantity=1&properties[Image]={encoded_image_url}"
+    )
+    return shopify_cart_url
+
+def process_image(image, num_clusters):
+    """
+    Processes the image by resizing and applying KMeans clustering.
+    Returns the resized image array, labels, and sorted cluster indices.
+    """
+    width, height = image.size
+    dim = 350  # Réduction à 350 pixels pour la plus grande dimension
+    new_width = dim if width > height else int((dim / height) * width)
+    new_height = dim if height >= width else int((dim / width) * height)
+
+    resized_image = image.resize((new_width, new_height))
+    img_arr = np.array(resized_image)
+
+    pixels = img_arr.reshape(-1, 3)
+    kmeans = KMeans(n_clusters=num_clusters, random_state=0).fit(pixels)
+    labels = kmeans.labels_
+    centers = kmeans.cluster_centers_
+
+    grayscale_values = np.dot(centers, [0.2989, 0.5870, 0.1140])
+    sorted_indices = np.argsort(grayscale_values)  # Trier du plus sombre au plus clair
+
+    return resized_image, img_arr, labels, sorted_indices, new_width, new_height
+
+def recolor_image(img_arr, labels, sorted_indices, palette_colors):
+    """
+    Recolors the image array based on the provided palette colors.
+    """
+    recolored_img_arr = np.zeros_like(img_arr)
+    for i in range(img_arr.shape[0]):
+        for j in range(img_arr.shape[1]):
+            lbl = labels[i * img_arr.shape[1] + j]
+            sorted_index = np.where(sorted_indices == lbl)[0][0]
+            recolored_img_arr[i, j] = palette_colors[sorted_index]
+    recolored_image = Image.fromarray(recolored_img_arr.astype('uint8'))
+    return recolored_image
