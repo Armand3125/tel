@@ -167,7 +167,7 @@ elif uploaded_image is not None and st.session_state.mode == "custom":
                 for color_name in sorted_ordered_colors_by_cluster[i]:
                     color_rgb = pal[color_name]
                     st.markdown(
-                        f"<div class='color-box' style='background-color: rgb{color_rgb}; width: 80px; height: 20px; margin: 4px; border-radius: 5px;'></div>",
+                        f"<div class='color-box' style='background-color: rgb{color_rgb}; width: 80px; height: 20px; margin-bottom: 4px; margin: 4px; border-radius: 5px;'></div>",
                         unsafe_allow_html=True
                     )
                 st.markdown("</div>", unsafe_allow_html=True)
