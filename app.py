@@ -26,7 +26,7 @@ palettes = [
 palettes_6 = [
     ["NC", "BF", "BM", "BC", "BG", "BJ"],
     ["NC", "VB", "RE", "OM", "JO", "BJ"],
-    ["NC", "VGa", "VG", "GA", "JO", "BJ"],  # Palette improvisée 1
+    ["NC", "VGa", "BM", "GA", "JO", "BJ"],  # Palette improvisée 1
     ["NC", "BF", "VGa", "VG", "VL", "BJ"],  # Palette improvisée 2
 ]
 
