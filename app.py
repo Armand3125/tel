@@ -44,13 +44,9 @@ if uploaded_image is not None:
     labels = kmeans.labels_
     centers = kmeans.cluster_centers_
 
-    # Calculer les proportions des clusters
-    cluster_counts = np.bincount(labels)
-    total_pixels = len(labels)
-    cluster_percentages = cluster_counts / total_pixels
-
-    # Trier les clusters par proportion (ordre décroissant)
-    sorted_indices = np.argsort(-cluster_percentages)
+    # Calculer les niveaux de gris des clusters
+    grayscale_values = np.dot(centers, [0.2989, 0.5870, 0.1140])
+    sorted_indices = np.argsort(grayscale_values)  # Trier du plus sombre au plus clair
 
     # Affichage de l'image recolorée pour chaque palette (2 par ligne)
     col_count = 0
