@@ -41,8 +41,8 @@ css = """
     <style>
         .stRadio div [data-testid="stMarkdownContainer"] p { display: none; }
         .radio-container { display: flex; flex-direction: column; align-items: center; margin: 10px; }
-        .color-container { display: flex; flex-direction: row; align-items: center; margin-top: 5px; }
-        .color-box { border: 3px solid black; margin-right: 10px; }
+        .color-container { display: flex; flex-direction: row; align-items: center; margin: 5px 0; }
+        .color-box { border: 3px solid black; margin-right: 8px; }
         .stColumn { padding: 0 !important; }
         .first-box { margin-top: 15px; }
         .percentage-container { margin-bottom: 0; }
@@ -167,7 +167,7 @@ elif uploaded_image is not None and st.session_state.mode == "custom":
                 for color_name in sorted_ordered_colors_by_cluster[i]:
                     color_rgb = pal[color_name]
                     st.markdown(
-                        f"<div class='color-box' style='background-color: rgb{color_rgb}; width: 80px; height: 20px; margin: 4px; border-radius: 5px; display: inline-block;'></div>",
+                        f"<div class='color-box' style='background-color: rgb{color_rgb}; width: 80px; height: 20px; margin: 4px 0; border-radius: 5px; display: inline-block;'></div>",
                         unsafe_allow_html=True
                     )
                 st.radio("", sorted_ordered_colors_by_cluster[i], key=f"radio_{i}", label_visibility="hidden")
