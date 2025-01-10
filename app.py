@@ -55,29 +55,15 @@ css = """
         .shopify-link { font-size: 20px; font-weight: bold; text-decoration: none; color: #2e86de; }
         .dimension-text { font-size: 16px; font-weight: bold; color: #555; }
         .add-to-cart-button { margin-top: 10px; }
-        .advice-container { background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
     </style>
 """
 st.markdown(css, unsafe_allow_html=True)
 
 # =========================================
-# Affichage des conseils d'utilisation
-# =========================================
-st.markdown("""
-<div class='advice-container'>
-    ### 📝 Conseils d'utilisation :
-    - Les couleurs les plus compatibles avec l'image apparaissent en premier.
-    - Préférez des images avec un bon contraste et des éléments bien définis.
-    - Une **image carrée** donnera un meilleur résultat.
-    - Il est recommandé d'inclure au moins une **zone de noir ou de blanc** pour assurer un bon contraste.
-    - Utiliser des **familles de couleurs** (ex: blanc, jaune, orange, rouge) peut produire des résultats visuellement intéressants.
-    - **Expérimentez** avec différentes combinaisons pour trouver l'esthétique qui correspond le mieux à votre projet !
-</div>
-""", unsafe_allow_html=True)
-
-# =========================================
 # Section 1: Téléchargement et Sélection
 # =========================================
+st.header("Téléchargement et Sélection")
+
 # Téléchargement de l'image
 uploaded_image = st.file_uploader("Télécharger une image", type=["jpg", "jpeg", "png"])
 
@@ -168,60 +154,9 @@ def recolor_image(img_arr, labels, sorted_indices, palette_colors):
     return recolored_image
 
 # =========================================
-# Section 2: Exemples
+# Section 2: Personalisations
 # =========================================
-st.subheader("Exemples")
-
-if uploaded_image is not None:
-    image = Image.open(uploaded_image).convert("RGB")
-    resized_image, img_arr, labels, sorted_indices, new_width, new_height = process_image(image, num_clusters=num_selections)
-
-    # Déterminer les palettes et le nombre de clusters
-    if num_selections == 4:
-        palettes = palettes_examples_4
-        num_clusters = 4
-    else:
-        palettes = palettes_examples_6
-        num_clusters = 6
-
-    # Affichage de l'image recolorée pour chaque palette (2 par ligne)
-    col_count = 0
-    cols_display = st.columns(2)
-
-    for palette in palettes:
-        palette_colors = [pal[color] for color in palette]
-
-        recolored_image = recolor_image(img_arr, labels, sorted_indices, palette_colors)
-
-        # Convert recolored image to buffer for upload
-        img_buffer = io.BytesIO()
-        recolored_image.save(img_buffer, format="PNG")
-        img_buffer.seek(0)
-
-        # Upload to Cloudinary
-        cloudinary_url = upload_to_cloudinary(img_buffer)
-
-        # Generate Shopify cart URL if upload is successful
-        if cloudinary_url:
-            shopify_cart_url = generate_shopify_cart_url(cloudinary_url, num_selections)
-            add_to_cart_button = f"<a href='{shopify_cart_url}' class='shopify-link' target='_blank'>Ajouter au panier</a>"
-        else:
-            shopify_cart_url = None
-            add_to_cart_button = "Erreur lors de l'ajout au panier."
-
-        with cols_display[col_count % 2]:
-            st.image(recolored_image, caption=f"Palette: {' - '.join(palette)}", use_container_width=True, width=350)
-            if cloudinary_url:
-                st.markdown(f"<div class='add-to-cart-button'>{add_to_cart_button}</div>", unsafe_allow_html=True)
-            else:
-                st.error("Erreur lors de l'upload de l'image.")
-
-        col_count += 1
-
-# =========================================
-# Section 3: Personalisations
-# =========================================
-st.subheader("Personalisations")
+st.header("Personalisations")
 
 if uploaded_image is not None:
     rectangle_width = 80 if num_selections == 4 else 50
@@ -317,5 +252,65 @@ if uploaded_image is not None:
                 st.markdown(f"<a href='{shopify_cart_url_pers}' class='shopify-link' target='_blank'>Ajouter au panier</a>", unsafe_allow_html=True)
 
 # =========================================
-# Affichage des conseils d'utilisation (déjà affiché en haut)
+# Section 3: Exemples de Recoloration
 # =========================================
+st.header("Exemples de Recoloration")
+
+if uploaded_image is not None:
+    image = Image.open(uploaded_image).convert("RGB")
+    resized_image, img_arr, labels, sorted_indices, new_width, new_height = process_image(image, num_clusters=num_selections)
+
+    # Déterminer les palettes et le nombre de clusters
+    if num_selections == 4:
+        palettes = palettes_examples_4
+        num_clusters = 4
+    else:
+        palettes = palettes_examples_6
+        num_clusters = 6
+
+    # Affichage de l'image recolorée pour chaque palette (2 par ligne)
+    col_count = 0
+    cols_display = st.columns(2)
+
+    for palette in palettes:
+        palette_colors = [pal[color] for color in palette]
+
+        recolored_image = recolor_image(img_arr, labels, sorted_indices, palette_colors)
+
+        # Convert recolored image to buffer for upload
+        img_buffer = io.BytesIO()
+        recolored_image.save(img_buffer, format="PNG")
+        img_buffer.seek(0)
+
+        # Upload to Cloudinary
+        cloudinary_url = upload_to_cloudinary(img_buffer)
+
+        # Generate Shopify cart URL if upload is successful
+        if cloudinary_url:
+            shopify_cart_url = generate_shopify_cart_url(cloudinary_url, num_selections)
+            add_to_cart_button = f"<a href='{shopify_cart_url}' class='shopify-link' target='_blank'>Ajouter au panier</a>"
+        else:
+            shopify_cart_url = None
+            add_to_cart_button = "Erreur lors de l'ajout au panier."
+
+        with cols_display[col_count % 2]:
+            st.image(recolored_image, caption=f"Palette: {' - '.join(palette)}", use_container_width=True, width=350)
+            if cloudinary_url:
+                st.markdown(f"<div class='add-to-cart-button'>{add_to_cart_button}</div>", unsafe_allow_html=True)
+            else:
+                st.error("Erreur lors de l'upload de l'image.")
+
+        col_count += 1
+
+# =========================================
+# Affichage des conseils d'utilisation
+# =========================================
+st.markdown("""
+    ### 📝 Conseils d'utilisation :
+    - Les couleurs les plus compatibles avec l'image apparaissent en premier.
+    - Préférez des images avec un bon contraste et des éléments bien définis.
+    - Une **image carrée** donnera un meilleur résultat.
+    - Il est recommandé d'inclure au moins une **zone de noir ou de blanc** pour assurer un bon contraste.
+    - Utiliser des **familles de couleurs** (ex: blanc, jaune, orange, rouge) peut produire des résultats visuellement intéressants.
+    - **Expérimentez** avec différentes combinaisons pour trouver l'esthétique qui correspond le mieux à votre projet !
+""", unsafe_allow_html=True)
