@@ -32,35 +32,43 @@ palettes_6 = [
 
 st.title("Tylice Simplifié")
 
-# Initialiser l'état du bouton "Personnalisation avancée"
-if "advanced_button_state" not in st.session_state:
-    st.session_state.advanced_button_state = False
-
-# Initialiser le mode par défaut
+# Initialiser les états des boutons dans st.session_state
 if "mode" not in st.session_state:
-    st.session_state.mode = "4"
+    st.session_state.mode = "4"  # Par défaut 4 couleurs
 
-# Texte du bouton basé sur l'état
-button_text = "Exemples" if st.session_state.advanced_button_state else "Personnalisation avancée"
+def set_mode(mode):
+    """Définir le mode actif et désactiver les autres."""
+    st.session_state.mode = mode
 
-# Boutons pour sélectionner le mode
-col1, col2, col3 = st.columns([1, 1, 2])
+# Boutons pour sélectionner le mode avec état "enfoncé"
+col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
 with col1:
-    if st.button("4 Couleurs : 7.95 €"):
-        st.session_state.mode = "4"
+    if st.button("4 Couleurs : 7.95 €", key="4_button",
+                 disabled=st.session_state.mode == "4"):
+        set_mode("4")
 with col2:
-    if st.button("6 Couleurs : 12.95 €"):
-        st.session_state.mode = "6"
+    if st.button("6 Couleurs : 12.95 €", key="6_button",
+                 disabled=st.session_state.mode == "6"):
+        set_mode("6")
 with col3:
-    if st.button(button_text):
-        st.session_state.advanced_button_state = not st.session_state.advanced_button_state
-        # Mettre à jour le mode si nécessaire
-        st.session_state.mode = "advanced" if st.session_state.advanced_button_state else "4"
+    if st.button("Personnalisation avancée", key="advanced_button",
+                 disabled=st.session_state.mode == "advanced"):
+        set_mode("advanced")
+with col4:
+    if st.button("Exemples", key="examples_button",
+                 disabled=st.session_state.mode == "examples"):
+        set_mode("examples")
 
-# Affichage du mode sélectionné
+# Comportement selon le mode sélectionné
 if st.session_state.mode == "4":
-    st.write("Mode 4 couleurs sélectionné.")
+    st.write("Mode 4 Couleurs sélectionné.")
+    # Ajoutez ici le traitement pour le mode 4 couleurs.
 elif st.session_state.mode == "6":
-    st.write("Mode 6 couleurs sélectionné.")
+    st.write("Mode 6 Couleurs sélectionné.")
+    # Ajoutez ici le traitement pour le mode 6 couleurs.
 elif st.session_state.mode == "advanced":
-    st.write("Mode personnalisation avancée activé.")
+    st.write("Mode Personnalisation avancée sélectionné.")
+    # Ajoutez ici le traitement pour la personnalisation avancée.
+elif st.session_state.mode == "examples":
+    st.write("Mode Exemples sélectionné.")
+    # Ajoutez ici l'affichage des exemples.
