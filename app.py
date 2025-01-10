@@ -39,6 +39,16 @@ if uploaded_image is not None:
     resized_image = image.resize((new_width, new_height))
     img_arr = np.array(resized_image)
 
+    # Trouver 4 clusters avec KMeans
+    pixels = img_arr.reshape(-1, 3)
+    kmeans = KMeans(n_clusters=4, random_state=0).fit(pixels)
+    labels = kmeans.labels_
+    centers = kmeans.cluster_centers_
+
+    # Trier les clusters par niveau de gris
+    grayscale_values = np.dot(centers, [0.2989, 0.5870, 0.1140])
+    sorted_indices = np.argsort(grayscale_values)  # Indices triés des clusters
+
     # Affichage de l'image recolorée pour chaque palette
     for palette in palettes:
         palette_colors = [pal[color] for color in palette]
@@ -46,10 +56,9 @@ if uploaded_image is not None:
         recolored_img_arr = np.zeros_like(img_arr)
         for i in range(img_arr.shape[0]):
             for j in range(img_arr.shape[1]):
-                pixel = img_arr[i, j]
-                distances = [np.linalg.norm(pixel - np.array(color)) for color in palette_colors]
-                closest_color_index = np.argmin(distances)
-                recolored_img_arr[i, j] = palette_colors[closest_color_index]
+                lbl = labels[i * img_arr.shape[1] + j]
+                sorted_index = np.where(sorted_indices == lbl)[0][0]
+                recolored_img_arr[i, j] = palette_colors[sorted_index]
 
         recolored_image = Image.fromarray(recolored_img_arr.astype('uint8'))
         st.image(recolored_image, caption=f"Palette: {' - '.join(palette)}", use_container_width=False, width=dim)
