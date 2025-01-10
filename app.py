@@ -35,21 +35,32 @@ st.title("Tylice Combiné")
 # Téléchargement de l'image
 uploaded_image = st.file_uploader("Télécharger une image", type=["jpg", "jpeg", "png"])
 
-# Choix entre propositions et personnalisation
+# Par défaut : 4 couleurs et pré-personnalisation
 if "mode" not in st.session_state:
-    st.session_state.mode = "propositions"
+    st.session_state.mode = "prepersonalisation"
+if "num_selections" not in st.session_state:
+    st.session_state.num_selections = 4
 
-if uploaded_image is not None:
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("Propositions pré-faites"):
-            st.session_state.mode = "propositions"
-    with col2:
-        if st.button("Personnalisation avancée"):
-            st.session_state.mode = "personnalisation"
+# Boutons pour choisir le nombre de couleurs
+col1, col2 = st.columns(2)
+with col1:
+    if st.button("4 Couleurs : 7.95 €"):
+        st.session_state.num_selections = 4
+with col2:
+    if st.button("6 Couleurs : 12.95 €"):
+        st.session_state.num_selections = 6
 
-# Afficher les propositions
-if uploaded_image is not None and st.session_state.mode == "propositions":
+# Boutons pour choisir le mode
+col3, col4 = st.columns(2)
+with col3:
+    if st.button("Pré-personnalisation"):
+        st.session_state.mode = "prepersonalisation"
+with col4:
+    if st.button("Personnalisation avancée"):
+        st.session_state.mode = "personnalisation"
+
+# Pré-personnalisation
+if uploaded_image is not None and st.session_state.mode == "prepersonalisation":
     image = Image.open(uploaded_image).convert("RGB")
     width, height = image.size
     dim = 350
@@ -60,7 +71,7 @@ if uploaded_image is not None and st.session_state.mode == "propositions":
     img_arr = np.array(resized_image)
 
     pixels = img_arr.reshape(-1, 3)
-    kmeans = KMeans(n_clusters=4, random_state=0).fit(pixels)
+    kmeans = KMeans(n_clusters=st.session_state.num_selections, random_state=0).fit(pixels)
     labels = kmeans.labels_
     centers = kmeans.cluster_centers_
 
@@ -70,7 +81,9 @@ if uploaded_image is not None and st.session_state.mode == "propositions":
     col_count = 0
     cols = st.columns(2)
 
-    for palette in palettes:
+    palettes_to_use = palettes if st.session_state.num_selections == 4 else palettes_6
+
+    for palette in palettes_to_use:
         palette_colors = [pal[color] for color in palette]
 
         recolored_img_arr = np.zeros_like(img_arr)
@@ -86,7 +99,7 @@ if uploaded_image is not None and st.session_state.mode == "propositions":
             st.image(recolored_image, caption=f"Palette: {' - '.join(palette)}", use_container_width=False, width=dim)
         col_count += 1
 
-# Afficher la personnalisation
+# Personnalisation avancée
 elif uploaded_image is not None and st.session_state.mode == "personnalisation":
     image = Image.open(uploaded_image).convert("RGB")
     width, height = image.size
@@ -97,38 +110,60 @@ elif uploaded_image is not None and st.session_state.mode == "personnalisation":
     resized_image = image.resize((new_width, new_height))
     img_arr = np.array(resized_image)
 
-    st.write("Choisissez le nombre de couleurs :")
-    num_selections = st.radio("Nombre de couleurs", [4, 6], index=0, horizontal=True)
+    if img_arr.shape[-1] == 3:
+        pixels = img_arr.reshape(-1, 3)
+        kmeans = KMeans(n_clusters=st.session_state.num_selections, random_state=0).fit(pixels)
+        labels = kmeans.labels_
+        centers = kmeans.cluster_centers_
 
-    kmeans = KMeans(n_clusters=num_selections, random_state=0).fit(img_arr.reshape(-1, 3))
-    labels = kmeans.labels_
-    centers = kmeans.cluster_centers_
+        centers_rgb = np.array(centers, dtype=int)
+        pal_rgb = np.array(list(pal.values()), dtype=int)
+        distances = np.linalg.norm(centers_rgb[:, None] - pal_rgb[None, :], axis=2)
 
-    cluster_counts = np.bincount(labels)
-    total_pixels = len(labels)
-    cluster_percentages = (cluster_counts / total_pixels) * 100
+        ordered_colors_by_cluster = []
+        for i in range(st.session_state.num_selections):
+            closest_colors_idx = distances[i].argsort()
+            ordered_colors_by_cluster.append([list(pal.keys())[idx] for idx in closest_colors_idx])
 
-    sorted_indices = np.argsort(-cluster_percentages)
-    cols = st.columns(num_selections * 2)
+        cluster_counts = np.bincount(labels)
+        total_pixels = len(labels)
+        cluster_percentages = (cluster_counts / total_pixels) * 100
 
-    selected_colors = []
-    for i, cluster_index in enumerate(sorted_indices):
-        with cols[i * 2]:
-            st.write(f"Cluster {i+1} : {cluster_percentages[cluster_index]:.2f}%")
-        with cols[i * 2 + 1]:
-            color_name = st.radio(
-                f"Couleurs pour Cluster {i+1}",
-                list(pal.keys()),
-                index=0,
-                key=f"color_{i}",
-            )
-            selected_colors.append(pal[color_name])
+        sorted_indices = np.argsort(-cluster_percentages)
+        sorted_percentages = cluster_percentages[sorted_indices]
+        sorted_ordered_colors_by_cluster = [ordered_colors_by_cluster[i] for i in sorted_indices]
 
-    recolored_img_arr = np.zeros_like(img_arr)
-    for i in range(img_arr.shape[0]):
-        for j in range(img_arr.shape[1]):
-            lbl = labels[i * img_arr.shape[1] + j]
-            recolored_img_arr[i, j] = selected_colors[lbl]
+        selected_colors = []
+        selected_color_names = []
+        cols = st.columns(st.session_state.num_selections * 2)
 
-    recolored_image = Image.fromarray(recolored_img_arr.astype('uint8'))
-    st.image(recolored_image, caption="Image Personnalisée", use_container_width=True)
+        for i, cluster_index in enumerate(sorted_indices):
+            with cols[i * 2]:
+                st.markdown("<div class='color-container'>", unsafe_allow_html=True)
+                for j, color_name in enumerate(sorted_ordered_colors_by_cluster[i]):
+                    color_rgb = pal[color_name]
+                    margin_class = "first-box" if j == 0 else ""
+                    st.markdown(
+                        f"<div class='color-box {margin_class}' style='background-color: rgb{color_rgb}; width: 80px; height: 20px; border-radius: 5px; margin-bottom: 4px;'></div>",
+                        unsafe_allow_html=True
+                    )
+                st.markdown("</div>", unsafe_allow_html=True)
+
+            with cols[i * 2 + 1]:
+                selected_color_name = st.radio("", sorted_ordered_colors_by_cluster[i], key=f"radio_{i}", label_visibility="hidden")
+                selected_colors.append(pal[selected_color_name])
+                selected_color_names.append(selected_color_name)
+
+        new_img_arr = np.zeros_like(img_arr)
+        for i in range(img_arr.shape[0]):
+            for j in range(img_arr.shape[1]):
+                lbl = labels[i * img_arr.shape[1] + j]
+                new_color_index = np.where(sorted_indices == lbl)[0][0]
+                new_img_arr[i, j] = selected_colors[new_color_index]
+
+        new_image = Image.fromarray(new_img_arr.astype('uint8'))
+        resized_image = new_image
+
+        col1, col2, col3 = st.columns([1, 6, 1])
+        with col2:
+            st.image(resized_image, use_container_width=True)
