@@ -87,18 +87,12 @@ if uploaded_image is not None:
         # Affichage des palettes fixes
         for palette in palettes:
             palette_colors = [pal[color] for color in palette]
-            palette_image = np.zeros((50, 200, 3), dtype=np.uint8)
-            section_width = 200 // len(palette_colors)
+            palette_img_arr = np.zeros((resized_image.height, resized_image.width, 3), dtype=np.uint8)
 
+            # Remplir l'image avec les couleurs de la palette
+            section_height = resized_image.height // len(palette_colors)
             for idx, color in enumerate(palette_colors):
-                palette_image[:, idx * section_width:(idx + 1) * section_width] = color
+                palette_img_arr[idx * section_height:(idx + 1) * section_height, :] = color
 
-            st.image(palette_image, caption=f"Palette: {' - '.join(palette)}", use_container_width=False, width=200)
-
-# Affichage des conseils d'utilisation
-st.markdown("""
-    ### 📝 Conseils d'utilisation :
-    - Les couleurs les plus compatibles avec l'image apparaissent en premier.
-    - Préférez des images avec un bon contraste et des éléments bien définis.
-    - Une **image carrée** donnera un meilleur résultat.
-""", unsafe_allow_html=True)
+            palette_image = Image.fromarray(palette_img_arr.astype('uint8'))
+            st.image(palette_image, caption=f"Palette: {' - '.join(palette)}", use_container_width=False, width=dim)
