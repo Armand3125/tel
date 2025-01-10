@@ -19,7 +19,13 @@ palettes = [
     ["NC", "RE", "JO", "BJ"],
     ["NC", "BM", "BG", "BJ"],
     ["NC", "BF", "BC", "JO"],
-    ["NC", "VB", "VL", "BJ"]
+    ["NC", "VB", "VL", "BJ"],
+]
+
+# Ajouter des palettes à 6 couleurs
+palettes_6 = [
+    ["NC", "BF", "BM", "BC", "BG", "BJ"],
+    ["NC", "VB", "RE", "OM", "JO", "BJ"],
 ]
 
 st.title("Tylice Simplifié")
@@ -60,6 +66,31 @@ if uploaded_image is not None:
             for j in range(img_arr.shape[1]):
                 lbl = labels[i * img_arr.shape[1] + j]
                 sorted_index = np.where(sorted_indices == lbl)[0][0]
+                recolored_img_arr[i, j] = palette_colors[sorted_index]
+
+        recolored_image = Image.fromarray(recolored_img_arr.astype('uint8'))
+
+        with cols[col_count % 2]:
+            st.image(recolored_image, caption=f"Palette: {' - '.join(palette)}", use_container_width=False, width=dim)
+        col_count += 1
+
+    # Ajouter une étape pour afficher les palettes à 6 couleurs
+    kmeans_6 = KMeans(n_clusters=6, random_state=0).fit(pixels)
+    labels_6 = kmeans_6.labels_
+    centers_6 = kmeans_6.cluster_centers_
+
+    # Calculer les niveaux de gris des clusters pour 6 couleurs
+    grayscale_values_6 = np.dot(centers_6, [0.2989, 0.5870, 0.1140])
+    sorted_indices_6 = np.argsort(grayscale_values_6)  # Trier du plus sombre au plus clair
+
+    for palette in palettes_6:
+        palette_colors = [pal[color] for color in palette]
+
+        recolored_img_arr = np.zeros_like(img_arr)
+        for i in range(img_arr.shape[0]):
+            for j in range(img_arr.shape[1]):
+                lbl = labels_6[i * img_arr.shape[1] + j]
+                sorted_index = np.where(sorted_indices_6 == lbl)[0][0]
                 recolored_img_arr[i, j] = palette_colors[sorted_index]
 
         recolored_image = Image.fromarray(recolored_img_arr.astype('uint8'))
