@@ -40,7 +40,7 @@ palettes_examples_6 = [
 # ====================================
 # Configuration du titre et du style
 # ====================================
-st.title("Tylice Simplifié")
+st.title("Tylice")
 
 css = """
     <style>
@@ -55,15 +55,29 @@ css = """
         .shopify-link { font-size: 20px; font-weight: bold; text-decoration: none; color: #2e86de; }
         .dimension-text { font-size: 16px; font-weight: bold; color: #555; }
         .add-to-cart-button { margin-top: 10px; }
+        .advice-container { background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
     </style>
 """
 st.markdown(css, unsafe_allow_html=True)
 
 # =========================================
+# Affichage des conseils d'utilisation
+# =========================================
+st.markdown("""
+<div class='advice-container'>
+    ### 📝 Conseils d'utilisation :
+    - Les couleurs les plus compatibles avec l'image apparaissent en premier.
+    - Préférez des images avec un bon contraste et des éléments bien définis.
+    - Une **image carrée** donnera un meilleur résultat.
+    - Il est recommandé d'inclure au moins une **zone de noir ou de blanc** pour assurer un bon contraste.
+    - Utiliser des **familles de couleurs** (ex: blanc, jaune, orange, rouge) peut produire des résultats visuellement intéressants.
+    - **Expérimentez** avec différentes combinaisons pour trouver l'esthétique qui correspond le mieux à votre projet !
+</div>
+""", unsafe_allow_html=True)
+
+# =========================================
 # Section 1: Téléchargement et Sélection
 # =========================================
-st.header("Téléchargement et Sélection")
-
 # Téléchargement de l'image
 uploaded_image = st.file_uploader("Télécharger une image", type=["jpg", "jpeg", "png"])
 
@@ -142,23 +156,23 @@ def process_image(image, num_clusters):
 
 def recolor_image(img_arr, labels, sorted_indices, palette_colors):
     """
-    Recolors the image array based on the provided palette colors using vectorized operations.
+    Recolors the image array based on the provided palette colors.
     """
-    # Create a mapping from cluster label to palette color
-    label_to_color = np.array(palette_colors)[sorted_indices[labels]]
-    
-    # Reshape to original image shape
-    recolored_img_arr = label_to_color.reshape(img_arr.shape)
-    
+    recolored_img_arr = np.zeros_like(img_arr)
+    for i in range(img_arr.shape[0]):
+        for j in range(img_arr.shape[1]):
+            lbl = labels[i * img_arr.shape[1] + j]
+            sorted_index = np.where(sorted_indices == lbl)[0][0]
+            recolored_img_arr[i, j] = palette_colors[sorted_index]
     recolored_image = Image.fromarray(recolored_img_arr.astype('uint8'))
     return recolored_image
 
 # =========================================
-# Section 2: Exemples de Recoloration
+# Section 2: Exemples
 # =========================================
-if uploaded_image is not None:
-    st.header("Exemples de Recoloration")
+st.subheader("Exemples")
 
+if uploaded_image is not None:
     image = Image.open(uploaded_image).convert("RGB")
     resized_image, img_arr, labels, sorted_indices, new_width, new_height = process_image(image, num_clusters=num_selections)
 
@@ -177,7 +191,6 @@ if uploaded_image is not None:
     for palette in palettes:
         palette_colors = [pal[color] for color in palette]
 
-        # Recoloriser l'image en utilisant la palette
         recolored_image = recolor_image(img_arr, labels, sorted_indices, palette_colors)
 
         # Convert recolored image to buffer for upload
@@ -208,9 +221,9 @@ if uploaded_image is not None:
 # =========================================
 # Section 3: Personalisations
 # =========================================
-if uploaded_image is not None:
-    st.header("Personalisations")
+st.subheader("Personalisations")
 
+if uploaded_image is not None:
     rectangle_width = 80 if num_selections == 4 else 50
     rectangle_height = 20
     cols_personalization = st.columns(num_selections * 2)
@@ -270,9 +283,12 @@ if uploaded_image is not None:
                 selected_color_names.append(selected_color_name)
 
         # Recolorisation de l'image basée sur les sélections de l'utilisateur
-        # Vectorized recoloring
-        sorted_labels_pers = sorted_indices_pers[labels_pers]
-        new_img_arr_pers = np.array(selected_colors)[sorted_labels_pers].reshape(img_arr_pers.shape)
+        new_img_arr_pers = np.zeros_like(img_arr_pers)
+        for i in range(img_arr_pers.shape[0]):
+            for j in range(img_arr_pers.shape[1]):
+                lbl = labels_pers[i * img_arr_pers.shape[1] + j]
+                new_color_index = np.where(sorted_indices_pers == lbl)[0][0]
+                new_img_arr_pers[i, j] = selected_colors[new_color_index]
 
         new_image_pers = Image.fromarray(new_img_arr_pers.astype('uint8'))
         resized_image_pers_final = new_image_pers
@@ -301,15 +317,5 @@ if uploaded_image is not None:
                 st.markdown(f"<a href='{shopify_cart_url_pers}' class='shopify-link' target='_blank'>Ajouter au panier</a>", unsafe_allow_html=True)
 
 # =========================================
-# Affichage des conseils d'utilisation
+# Affichage des conseils d'utilisation (déjà affiché en haut)
 # =========================================
-if uploaded_image is not None:
-    st.markdown("""
-        ### 📝 Conseils d'utilisation :
-        - Les couleurs les plus compatibles avec l'image apparaissent en premier.
-        - Préférez des images avec un bon contraste et des éléments bien définis.
-        - Une **image carrée** donnera un meilleur résultat.
-        - Il est recommandé d'inclure au moins une **zone de noir ou de blanc** pour assurer un bon contraste.
-        - Utiliser des **familles de couleurs** (ex: blanc, jaune, orange, rouge) peut produire des résultats visuellement intéressants.
-        - **Expérimentez** avec différentes combinaisons pour trouver l'esthétique qui correspond le mieux à votre projet !
-    """, unsafe_allow_html=True)
